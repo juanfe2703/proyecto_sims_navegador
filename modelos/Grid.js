@@ -1,7 +1,7 @@
 class Grid{
     constructor(){
-        this._width = width;
-        this._height = height;
+        this._width = 15;
+        this._height = 15;
         this._cell = [];
     }
 
