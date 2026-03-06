@@ -1,0 +1,24 @@
+/* Cuadrícula del mapa (estilo tradicional) */
+body{
+    background: #E8F5E9;
+}
+
+#id_city {
+    width: 450px;
+    margin: 16px auto;
+    overflow: hidden;
+}
+
+.cell {
+    float: left;  /* Para colocar las celdas una al lado de la otra */
+    width: 30px;    /* Cada celda tiene un tamaño fijo de 30x30 píxeles */
+    height: 30px;
+    box-sizing: border-box; /* Para incluir el borde dentro del tamaño total de la celda */
+    border: 1px solid #81C784;  /* Borde para distinguir las celdas */
+    background: #C8E6C9;
+}
+
+.cell:hover {       /* Cambia el cursor al pasar sobre una celda */
+    background: #2E7D32;    
+    cursor: pointer;        /* Cambia el cursor a un puntero para indicar que es interactivo */
+}
