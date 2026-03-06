@@ -3,8 +3,8 @@ class Cell{
         this._x = x;
         this._y = y;
         this._type = type;
-        this._road = road;
-        this._building = building;
+        this._road = null;
+        this._building = null;
     }
 
     // Getters

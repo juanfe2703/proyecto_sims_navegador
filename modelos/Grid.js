@@ -15,5 +15,8 @@ class Grid{
     setHeight(height) { this._height = height; }
     setCell(cell) { this._cell = cell; }
 
+    Add_position(){
+        this._cell.push(new Cell());
+    }
     
 }
