@@ -1,7 +1,7 @@
 class Grid{
     constructor(){
-        this._width = 15;
-        this._height = 15;
+        this._width = null;
+        this._height = null;
         this._cell = [];
     }
 
@@ -11,12 +11,17 @@ class Grid{
     getCell() { return this._cell; }
 
     // Setters
-    setWidth(width) { this._width = width; }
-    setHeight(height) { this._height = height; }
-    setCell(cell) { this._cell = cell; }
+    setWidth(width) {
+       this._width = width;
+    }
 
+    setHeight(height){
+        this._height = height;
+    }
+
+    setCell(cell) { this._cell = cell; }
+    
     Add_position(){
         this._cell.push(new Cell());
     }
-    
 }

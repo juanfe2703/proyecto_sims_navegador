@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../estilos/stye_Setup_panel.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <script defer src="../../modelos/Grid.js"></script>
+    <script defer src = "../../acceso_a_datos/StorageService.js"></script>
+    <script defer src="../../modelos/City.js"></script>
+    <script defer src="../../negocio/City_panel.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div id ="Ciry_content">
+    <div class="form-panel p-4 shadow">
+        <h4>City Game</h4>
+
+        <label for="city-name">Nombre de la Ciudad:</label>
+        <input id="city-name" class="form-control" type="text">
+
+        <label for="mayor-name">Nombre del Alcalde:</label>
+        <input id="mayor-name" class="form-control" type="text">
+
+        <label for="location">Ubicación de la Ciudad:</label>
+        <input id="location" class="form-control" type="text">
+
+        <label for="map-size">Tamaño del mapa</label>
+        <select id="map-size" class="form-select form-select-lg mb-3" aria-label="Selecciona el tamaño del mapa">
+            <option selected></option>
+            <option value="1">15 x 15</option>
+            <option value="2">30 x 30 </option>
+            <option value="3">Ninguna</option>
+        </select>
+        <button id="btn-create-city" class="btn btn-success btn-lg mt-3" type="button">Crear Ciudad</button>
+        <button class="btn btn-success btn-lg mt-3" type="button">Importar</button>
+        <button class="btn btn-success btn-lg mt-3" type="button">Generar Ciudad</button>
+    </div>
+</div>
+</body>
+</html>
