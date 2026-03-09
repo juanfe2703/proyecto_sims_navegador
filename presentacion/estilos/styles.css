@@ -1,5 +1,13 @@
 /* ...existing code... */
 
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 /* Contenedor principal de la ciudad/cuadrícula */
 #id_city {
     display: grid; /* Activa CSS Grid para ordenar las celdas en filas/columnas */
@@ -10,7 +18,8 @@
     --grid-size: 15;
     grid-template-columns: repeat(var(--grid-size), minmax(0, 1fr)); /* Define columnas iguales */
     grid-template-rows: repeat(var(--grid-size), minmax(0, 1fr)); /* Define filas iguales */
-
+    
+    
     gap: 0; /* Sin separación entre celdas */
     border: 1px solid #81C784; /* Borde exterior del mapa */
     box-sizing: border-box; /* Incluye borde dentro del tamaño total */

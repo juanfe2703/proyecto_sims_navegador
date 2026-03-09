@@ -12,18 +12,29 @@ document.addEventListener("DOMContentLoaded",function(){
         let Imput_mayor = document.getElementById("mayor-name");
         let Imput_location = document.getElementById("location");
         let Imput_mapSize = document.getElementById("map-size");
-
-        // Construye el Grid a partir de la opción seleccionada (15x15 o 30x30)
-        let mapSize = createMape(Imput_mapSize);
-
-        // Crea el objeto City con los datos ingresados
-        let myCity = createCity(Imput_name,Imput_mayor,Imput_location, mapSize);
-        if (myCity) {
-            // Guarda/persiste la ciudad (función definida en StorageService.js)
-            loadCity(myCity);
-
-            // Navega a la vista del juego (misma carpeta de vistas)
-            window.location.href = "game.html";
+        
+        //Valida los campos del formulario (no vacíos) antes de crear la ciudad y el mapa
+        if (Imput_name.value != "" && Imput_mayor.value != "" && Imput_location.value != "") {
+            // Valida que se haya seleccionado un tamaño de mapa válido (no "Seleccione")
+            if(Imput_mapSize.value == "3"){
+                alert("Seleccione un tamaño de mapa valido");
+            }else{
+                // Construye el Grid a partir de la opción seleccionada (15x15 o 30x30)
+                let mapSize = createMape(Imput_mapSize);
+                // Crea el objeto City con los datos ingresados
+                let myCity = createCity(Imput_name,Imput_mayor,Imput_location, mapSize);
+                // Valida que la ciudad se haya creado correctamente antes de persistirla y redirigir
+                if(myCity){
+                    console.log("Ciudad creada con exito" + myCity);
+                    // Guarda/persiste la ciudad (función definida en StorageService.js)
+                    loadCity(myCity);
+                    // Navega a la vista del juego (misma carpeta de vistas)
+                    window.location.href = "game.html";
+                }
+            } 
+            
+        }else{
+            alert("Complete todos los datos para crear la ciudad");
         }
     })
 
@@ -37,21 +48,14 @@ document.addEventListener("DOMContentLoaded",function(){
      */
     function createMape(Option) {
         let myGrid = new Grid();
-        try{
-            if(Option.value == "1"){
-                myGrid.setWidth(15);
-                myGrid.setHeight(15);
-                return myGrid;
-            }else if(Option.value == "2"){
-                myGrid.setWidth(30);
-                myGrid.setHeight(30);
-                return myGrid;
-            }else{
-                alert("No se selecciono un tamaño de mapa valido");
-                throw new Error("No se selecciono un tamaño de mapa valido");
-            }
-        }catch(error){
-            console.error(error.message);
+        if(Option.value == "1"){
+            myGrid.setWidth(15);
+            myGrid.setHeight(15);
+            return myGrid;
+        }else if(Option.value == "2"){
+            myGrid.setWidth(30);
+            myGrid.setHeight(30);
+            return myGrid;
         }
     }
 
@@ -66,20 +70,17 @@ document.addEventListener("DOMContentLoaded",function(){
      * @returns {City|undefined} City creada o undefined si hay error/validación.
      */
     function createCity(name_city, name_player, location, mapSize) {
+        let myCity = new City();
         try{
-            if(name_city.value == "" || name_player.value == "" || location.value == ""){
-                alert("Todos los campos deben ser llenados");
-                throw new Error("Todos los campos deben ser llenados");
-            }else{
-                let myCity = new City();
-                myCity.setNameCity(name_city.value);
-                myCity.setNamePlayer(name_player.value);
-                myCity.setLocation(location.value);
-                myCity.setGrid(mapSize);
-                alert("Ciudad creada exitosamente");
-                return myCity;
-            }
+            myCity.setNameCity(name_city.value);
+            myCity.setNamePlayer(name_player.value);
+            myCity.setLocation(location.value);
+            myCity.setGrid(mapSize);
+            alert("Ciudad creada exitosamente");
+            console.log("Ciudad creada con exito" + myCity);
+            return myCity;
         }catch(error){
+            alert("Error al crear la ciudad: " + error.message);
             console.error(error.message);
         }
     }

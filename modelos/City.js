@@ -38,10 +38,10 @@ class City {
 
     // Setters: actualizan el valor de cada atributo (con validaciones simples)
     setNameCity(name_city) {
-        if (name_city.length <= 50) {
+        if (name_city.length <= 5) {
             this._name_city = name_city;
         } else {
-            alert(name_city + " No es un nombre valido ")
+            throw new("No es un nombre  de ciudad valido ")
         }
     }
 
@@ -49,7 +49,7 @@ class City {
         if (name_player.length <= 50) {
             this._name_player = name_player;
         } else {
-            alert(name_player + " No es un nombre valido ")
+            throw new("No es un nombre  de jugador valido ")
         }
     }
 
@@ -57,7 +57,7 @@ class City {
         if (location.length <= 50) {
             this._location = location;
         } else {
-            alert(location + " No es una ubicacion valida ")
+            throw new("No es una ubicacion valida ")
         }
     }
 
