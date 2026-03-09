@@ -1,25 +1,42 @@
-/* Cuadrícula del mapa (estilo tradicional) */
-body{
-    background: #E8F5E9;
-}
+/* ...existing code... */
 
+/* Contenedor principal de la ciudad/cuadrícula */
 #id_city {
-    width: 450px;
-    margin: 16px auto;
-    overflow: hidden;
+    display: grid; /* Activa CSS Grid para ordenar las celdas en filas/columnas */
+    width: min(92vmin, 700px); /* Tamaño adaptable: 92% del lado menor de la ventana, máximo 700px */
+    aspect-ratio: 1 / 1; /* Mantiene el contenedor cuadrado */
+
+    /* Tamaño por defecto de la grilla: 15 x 15 */
+    --grid-size: 15;
+    grid-template-columns: repeat(var(--grid-size), minmax(0, 1fr)); /* Define columnas iguales */
+    grid-template-rows: repeat(var(--grid-size), minmax(0, 1fr)); /* Define filas iguales */
+
+    gap: 0; /* Sin separación entre celdas */
+    border: 1px solid #81C784; /* Borde exterior del mapa */
+    box-sizing: border-box; /* Incluye borde dentro del tamaño total */
+    overflow: hidden; /* Evita que se vea contenido fuera del contenedor */
 }
 
+/* Si existen al menos 900 celdas, cambia a 30 x 30 */
+#id_city:has(.cell:nth-child(900)) {
+    --grid-size: 30; /* Sobrescribe tamaño de grilla a 30 */
+}
+
+/* Estilo base de cada celda */
 .cell {
-    float: left;  /* Para colocar las celdas una al lado de la otra */
-    width: 30px;    /* Cada celda tiene un tamaño fijo de 30x30 píxeles */
-    height: 30px;
-    box-sizing: border-box; /* Para incluir el borde dentro del tamaño total de la celda */
-    border: 1px solid #81C784;  /* Borde para distinguir las celdas */
-    background: #C8E6C9;
+    min-width: 0; /* Permite encoger en Grid sin romper layout horizontal */
+    min-height: 0; /* Permite encoger en Grid sin romper layout vertical */
+    width: 100%; /* Ocupa todo el ancho de su track */
+    aspect-ratio: 1 / 1; /* Mantiene cada celda cuadrada */
+    box-sizing: border-box; /* Incluye borde en el tamaño de la celda */
+    border: 1px solid #81C784; /* Líneas visibles de la cuadrícula */
+    background: #C8E6C9; /* Color base (paleta actual) */
 }
 
-.cell:hover {       /* Cambia el cursor al pasar sobre una celda */
-    background: #2E7D32;    
-    cursor: pointer;        /* Cambia el cursor a un puntero para indicar que es interactivo */
+/* Efecto visual al pasar el mouse por una celda */
+.cell:hover {
+    background: #2E7D32; /* Cambia color al hover */
+    cursor: pointer; /* Indica que la celda es interactiva */
 }
 
+/* ...existing code... */
