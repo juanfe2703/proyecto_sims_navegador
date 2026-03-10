@@ -38,7 +38,7 @@ class City {
 
     // Setters: actualizan el valor de cada atributo (con validaciones simples)
     setNameCity(name_city) {
-        if (name_city.length <= 5) {
+        if (name_city.length <= 50) {
             this._name_city = name_city;
         } else {
             throw new("No es un nombre  de ciudad valido ")
