@@ -1,13 +1,10 @@
 #id_city {
     display: grid;
-    width: 100%;
-    max-width: 700px;
     aspect-ratio: 1 / 1;
     gap: 0;
     border: 1px solid #81C784;
     box-sizing: border-box;
 }
-
 .cell {
     width: 100%;
     aspect-ratio: 1 / 1;
@@ -19,3 +16,11 @@
     background: #2E7D32;
     cursor: pointer;
 }
+
+.sidebar-left{
+    width: 250px;
+}
+
+.sidebar-right{
+    width: 300px;
+}   

@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded",function(){
     grid_adjustment_Mobile(gridElement);
 
     // Ajuste dinámico al cambiar tamaño de ventana
-    window.addEventListener('resize', grid_adjustment_Mobile(gridElement));
+    window.addEventListener('resize', () => grid_adjustment_Mobile(gridElement));
 })
 
 function Creacion_city(City_datos){

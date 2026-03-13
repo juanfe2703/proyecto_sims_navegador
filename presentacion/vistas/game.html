@@ -13,9 +13,21 @@
     <script defer src="../../modelos/City.js"></script>
 </head>
 <body>
-    <div class="container-fluid p-3">
-        <div id="id_city"></div>
-    </div>
+        <div  id = "Container" class="container-fluid p-3">
+            <div class="row">
+                <div class="col-auto sidebar-left px-0"></div>
+                <div class="col map-container px-0" id="id_city"></div>
+                <div class="col-auto sidebar-right px-0 d-flex flex-column gap-3">
+                    <div class = "panel flex-grow-1 p-2 bg-light">
+                        <div class = "flex-item"></div>
+                    </div>
+                    <div class = "panel flex-grow-1 p-2 bg-light">
+                        <div class = "flex-item"></div>
+                    </div>
+                </div>   
+            </div>
+            
+        </div>
 
 </body>
 </html>
