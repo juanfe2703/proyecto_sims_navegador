@@ -46,34 +46,37 @@ document.addEventListener("DOMContentLoaded",function(){
         return myCell;   
     }
    
-    function grid_adjustment_Mobile(gridElement){
-        Mobile_threshold = window.innerWidth <= 768; // Umbral para considerar móvil
-        if(Mobile_threshold){
-            gridElement.style.width = "100%";
-            console.log("Es móvil, se ajusta a 100%");
-        }else{
-            gridElement.style.width = "700px";
-            console.log("No es móvil, se ajusta a 700px");
-        }
-        console.log("Viewport:", window.innerWidth, "Grid width:", gridElement.style.width);
-    }
-
     Map_generation(myCity.getGrid().getWidth(), myCity.getGrid().getHeight());
-    grid_adjustment_Mobile(gridElement);
 
-    // Ajuste dinámico al cambiar tamaño de ventana
-    window.addEventListener('resize', () => grid_adjustment_Mobile(gridElement));
 })
 
+// Funcion para convertir los datos de la ciudad guardada en localStorage a una instancia de City
 function Creacion_city(City_datos){
-    myCity = new City();
+    let myCity = new City();
     myCity.setNameCity(City_datos._name_city);
     myCity.setNamePlayer(City_datos._name_player);
     myCity.setLocation(City_datos._location);
-    myCity.setGrid(City_datos._grid);
-    myGrid = new Grid();
+
+    let myGrid = new Grid();
     myGrid.setWidth(City_datos._grid._width);
     myGrid.setHeight(City_datos._grid._height);
     myCity.setGrid(myGrid);
+
+    // Reconstruye Climate si venía persistido en localStorage
+    if (City_datos._climate) {
+        const climateData = City_datos._climate;
+        const climate = new Climate(
+            climateData.city ?? climateData.ciudad,
+            climateData.country ?? climateData.pais,
+            climateData.temperature_c ?? climateData.temperatura_c,
+            climateData.condition ?? climateData.condicion,
+            climateData.humidity ?? climateData.humedad,
+            climateData.icon ?? climateData.icono
+        );
+        myCity.setClimate(climate);
+    }
+
     return myCity;
 }
+
+

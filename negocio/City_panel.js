@@ -6,7 +6,7 @@
  */
 document.addEventListener("DOMContentLoaded",function(){
     let btnCreateCity = document.getElementById("btn-create-city");
-    btnCreateCity.addEventListener("click",function(){
+    btnCreateCity.addEventListener("click", async function(){
         // Captura de elementos del DOM (inputs/select)
         let Imput_name = document.getElementById("city-name");
         let Imput_mayor = document.getElementById("mayor-name");
@@ -21,8 +21,11 @@ document.addEventListener("DOMContentLoaded",function(){
             }else{
                 // Construye el Grid a partir de la opción seleccionada (15x15 o 30x30)
                 let mapSize = createMape(Imput_mapSize);
+                // Obtiene el clima para la ubicación ingresada y crea un objeto Climate
+                const myClimate = await Create_climate(Imput_location.value);
                 // Crea el objeto City con los datos ingresados
-                let myCity = createCity(Imput_name,Imput_mayor,Imput_location, mapSize);
+                let myCity = createCity(Imput_name,Imput_mayor,Imput_location, mapSize, myClimate);
+                
                 // Valida que la ciudad se haya creado correctamente antes de persistirla y redirigir
                 if(myCity){
                     console.log("Ciudad creada con exito" + myCity);
@@ -37,7 +40,6 @@ document.addEventListener("DOMContentLoaded",function(){
             alert("Complete todos los datos para crear la ciudad");
         }
     })
-
 
 
     /**
@@ -69,13 +71,14 @@ document.addEventListener("DOMContentLoaded",function(){
      * @param {Grid} mapSize Grid previamente configurado.
      * @returns {City|undefined} City creada o undefined si hay error/validación.
      */
-    function createCity(name_city, name_player, location, mapSize) {
+    function createCity(name_city, name_player, location, mapSize, climate) {
         let myCity = new City();
         try{
             myCity.setNameCity(name_city.value);
             myCity.setNamePlayer(name_player.value);
             myCity.setLocation(location.value);
             myCity.setGrid(mapSize);
+            myCity.setClimate(climate);
             alert("Ciudad creada exitosamente");
             console.log("Ciudad creada con exito" + myCity);
             return myCity;
@@ -84,5 +87,19 @@ document.addEventListener("DOMContentLoaded",function(){
             console.error(error.message);
         }
     }
-})
+
+    function Create_climate(location){
+        const apiClimate = new ApiClimate();
+        return apiClimate.getCurrentWeather(location).then(climate => {
+            if(climate){
+                console.log("Clima obtenido con exito: " + climate);
+                return new Climate(climate.city, climate.country, climate.temperature_c, climate.condition, climate.humidity, climate.icon);
+            }else{
+                alert("No se pudo obtener el clima para la ubicación ingresada. Se asignará un clima por defecto.");
+                return null;
+            }
+        })
+    }
+
+});
 

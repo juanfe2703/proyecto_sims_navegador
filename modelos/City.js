@@ -22,6 +22,7 @@ class City {
         this._resources = null;
         this._score = null
         this._turn = 0
+        this._climate = null;
     }
 
     // Getters: devuelven el valor actual de cada atributo
@@ -35,6 +36,7 @@ class City {
     getResources() { return this._resources }
     getScore() { return this._score }
     getTurn() { return this._turn }
+    getClimate() { return this._climate }
 
     // Setters: actualizan el valor de cada atributo (con validaciones simples)
     setNameCity(name_city) {
@@ -67,7 +69,7 @@ class City {
     setResources(resources) { this._resources = resources }
     setScore(score) { this._score = score }
     setTurn(turn) { this._turn = turn }
-
+    setClimate(climate) { this._climate = climate }
     incrementTurn() { this._turn++ }
 
     addBuilding(building) {
