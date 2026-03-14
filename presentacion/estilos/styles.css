@@ -23,4 +23,38 @@
 
 .sidebar-right{
     width: 300px;
-}   
+}
+
+
+#weather-info {
+    background: #374151;
+    padding: 15px;           /* espacio interno simétrico */
+    color: #F3F4F6;
+    border-radius: 8px;
+    border: 2px solid #1F2937;
+}
+
+.panel{
+    background: #1F2937;    
+    margin-left: 10px;
+    border-radius: 8px;
+}
+
+#weather-panel {
+    max-height: 270px;
+    padding: 20px;           /* espacio uniforme desde los bordes */
+    background: #1F2937;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;  /* coloca los hijos en columna */
+    gap: 10px;               /* espacio entre hijos */
+}
+
+#weather-info :hover {
+    background: #4B5563;
+    border-radius: 8px;
+}
+
+.details{
+    margin-top: 5px;
+}

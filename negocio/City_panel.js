@@ -93,9 +93,14 @@ document.addEventListener("DOMContentLoaded",function(){
         return apiClimate.getCurrentWeather(location).then(climate => {
             if(climate){
                 console.log("Clima obtenido con exito: " + climate);
-                return new Climate(climate.city, climate.country, climate.temperature_c, climate.condition, climate.humidity, climate.icon);
+                return new Climate(
+                    climate.city,
+                    climate.temperature_c,
+                    climate.condition,
+                    climate.humidity,
+                    climate.icon
+                );
             }else{
-                alert("No se pudo obtener el clima para la ubicación ingresada. Se asignará un clima por defecto.");
                 return null;
             }
         })

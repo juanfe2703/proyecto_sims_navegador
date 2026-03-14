@@ -1,7 +1,6 @@
 class Climate{
-    constructor(city, country, temperature_c, condition, humidity, icon) {
+    constructor(city = "", temperature_c = 0, condition = "", humidity = 0, icon = "") {
         this.city = city;
-        this.country = country;
         this.temperature_c = temperature_c;
         this.condition = condition;
         this.humidity = humidity;
@@ -10,7 +9,6 @@ class Climate{
 
     // Getters
     getCity() { return this.city; }
-    getCountry() { return this.country; }
     getTemperatureC() { return this.temperature_c; }
     getCondition() { return this.condition; }
     getHumidity() { return this.humidity; }
@@ -18,9 +16,9 @@ class Climate{
 
     // Setters
     setCity(city) { this.city = city; }
-    setCountry(country) { this.country = country; }
     setTemperatureC(temperature_c) { this.temperature_c = temperature_c; }
     setCondition(condition) { this.condition = condition; }
     setHumidity(humidity) { this.humidity = humidity; }
     setIcon(icon) { this.icon = icon; }
+    
 }

@@ -69,7 +69,14 @@ class City {
     setResources(resources) { this._resources = resources }
     setScore(score) { this._score = score }
     setTurn(turn) { this._turn = turn }
-    setClimate(climate) { this._climate = climate }
+    setClimate(climate) { 
+        if(climate == null) {
+            throw new Error("Problema con la generacion del clima");
+        }else{
+            this._climate = climate;
+        }
+        
+    }
     incrementTurn() { this._turn++ }
 
     addBuilding(building) {
