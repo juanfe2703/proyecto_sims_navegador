@@ -11,8 +11,10 @@ document.addEventListener("DOMContentLoaded",function(){
     let weather_content = document.getElementById("weather-info")
 
     setInterval(function(){
-        Weather_print(myCity.getClimate());
-    }, 1800000); // Actualiza el clima cada 30 minutos (1800000 ms)
+            myCity.ensureClimate()
+                .then(() => Weather_print(myCity.getClimate()))
+                .catch((error) => console.error("Error al actualizar el clima:", error));
+    }, 5000); // Actualiza el clima cada 30 minutos (1800000 ms)
 
     function Weather_print(Climate_object) {
         weather_content.innerHTML = `<div class = "header p-50x">
@@ -106,11 +108,4 @@ function Create_position(x, y){
         myCell.setY(y)
         console.log(myCell);
         return myCell;   
-}
-
-
-function updateWeatherPanel(climate) {
-
-
-    
 }

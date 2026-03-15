@@ -21,16 +21,18 @@ document.addEventListener("DOMContentLoaded",function(){
             }else{
                 // Construye el Grid a partir de la opción seleccionada (15x15 o 30x30)
                 let mapSize = createMape(Imput_mapSize);
-                // Obtiene el clima para la ubicación ingresada y crea un objeto Climate
-                const myClimate = await Create_climate(Imput_location.value);
-                // Crea el objeto City con los datos ingresados
-                let myCity = createCity(Imput_name,Imput_mayor,Imput_location, mapSize, myClimate);
-                
+                 // Crea el objeto City con los datos ingresados
+                let myCity = await createCity(Imput_name,Imput_mayor,Imput_location, mapSize);
                 // Valida que la ciudad se haya creado correctamente antes de persistirla y redirigir
                 if(myCity){
                     console.log("Ciudad creada con exito" + myCity);
                     // Guarda/persiste la ciudad (función definida en StorageService.js)
-                    loadCity(myCity);
+                    // Importante: NO usar un método local llamado "loadCity" porque pisa el global.
+                    if (typeof window.loadCity === "function") {
+                        window.loadCity(myCity);
+                    } else {
+                        console.warn("No se encontró window.loadCity(). Verifica que StorageService.js esté cargado.");
+                    }
                     // Navega a la vista del juego (misma carpeta de vistas)
                     window.location.href = "game.html";
                 }
@@ -71,14 +73,18 @@ document.addEventListener("DOMContentLoaded",function(){
      * @param {Grid} mapSize Grid previamente configurado.
      * @returns {City|undefined} City creada o undefined si hay error/validación.
      */
-    function createCity(name_city, name_player, location, mapSize, climate) {
+    async function createCity(name_city, name_player, location, mapSize) {
         let myCity = new City();
         try{
+
             myCity.setNameCity(name_city.value);
             myCity.setNamePlayer(name_player.value);
             myCity.setLocation(location.value);
             myCity.setGrid(mapSize);
-            myCity.setClimate(climate);
+
+            // Resuelve la promesa del clima y deja la ciudad lista para usar más adelante
+            await myCity.ensureClimate();
+
             alert("Ciudad creada exitosamente");
             console.log("Ciudad creada con exito" + myCity);
             return myCity;
@@ -88,23 +94,9 @@ document.addEventListener("DOMContentLoaded",function(){
         }
     }
 
-    function Create_climate(location){
-        const apiClimate = new ApiClimate();
-        return apiClimate.getCurrentWeather(location).then(climate => {
-            if(climate){
-                console.log("Clima obtenido con exito: " + climate);
-                return new Climate(
-                    climate.city,
-                    climate.temperature_c,
-                    climate.condition,
-                    climate.humidity,
-                    climate.icon
-                );
-            }else{
-                return null;
-            }
-        })
-    }
+
+
+    
 
 });
 

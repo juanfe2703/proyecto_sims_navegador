@@ -90,4 +90,29 @@ class City {
     addCitizen(citizen) {
         this._citizens.push(citizen)
     }
+
+
+    Create_climate(){
+        const apiClimate = new ApiClimate();
+        return apiClimate.getCurrentWeather(this._location).then(climate => {
+            if(climate){
+                console.log("Clima obtenido con exito: " + climate);
+                return new Climate(
+                    climate.city,
+                    climate.temperature_c,
+                    climate.condition,
+                    climate.humidity,
+                    climate.icon
+                );
+            }else{
+                return null;
+            }
+        })
+    }
+
+    async ensureClimate(){
+        const myClimate = await this.Create_climate();
+        this.setClimate(myClimate);
+        return myClimate;
+    }
 }

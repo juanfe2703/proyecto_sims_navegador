@@ -41,7 +41,9 @@
 }
 
 #weather-panel {
-    max-height: 270px;
+    height: fit-content;
+    overflow-y: auto;
+    max-height: 300px;
     padding: 20px;           /* espacio uniforme desde los bordes */
     background: #1F2937;
     border-radius: 8px;
