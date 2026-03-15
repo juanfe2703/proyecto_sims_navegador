@@ -1,12 +1,13 @@
 class Building {
-    constructor(){
+    constructor(id, name, cost, maintenanceCost, electricityConsumption, waterConsumption){
         this._id = id;
         this._name = name;
-        this._cost = cookieStore;
+        this._cost = cost;
         this._maintenanceCost = maintenanceCost;
         this._electricityConsumption = electricityConsumption;
         this._waterConsumption = waterConsumption;
     }
+
 
     // Getters
     getId() { return this._id; }
