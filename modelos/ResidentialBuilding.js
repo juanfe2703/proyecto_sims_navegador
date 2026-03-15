@@ -12,4 +12,14 @@ class ResidentialBuilding extends Building {
     // Setters
     setCapacity(capacity) { this._capacity = capacity; }
     setCitizens(citizens) { this._citizens = citizens; }
+
+
+
+    // Produce: only consumption, no generate anything 
+    produce() {
+        return new ResourceTransaction({
+            electricity: -this._electricityConsumption,
+            water: -this._waterConsumption
+        });
+    }
 }

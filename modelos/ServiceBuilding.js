@@ -12,4 +12,13 @@ class ServiceBuilding extends Building {
     // Setters
     setRadius(radius) { this._radius = radius; }
     setHappinessBoost(happinessBoost) { this._happinessBoost = happinessBoost; }
+
+
+    //only consume electricity (and water if is hospital)
+    produce() {
+        return new ResourceTransaction({
+            electricity: -this._electricityConsumption,
+            water: -this._waterConsumption
+        });
+    }
 }

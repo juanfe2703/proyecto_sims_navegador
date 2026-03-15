@@ -15,5 +15,16 @@ class CommercialBuilding extends Building {
     setJobs(jobs) { this._jobs = jobs; }
     setEmployees(employees) { this._employees = employees; }
     setIncomePerTurn(incomePerTurn) { this._incomePerTurn = incomePerTurn; }
+
+
+    //this method generate increases if there's electricity
+    //if electricityConsumption > 0 but there's no electricity, it not work 
+    produce() {
+        return new ResourceTransaction({
+            money: this._incomePerTurn,
+            electricity: -this._electricityConsumption,
+            water: -this._waterConsumption
+        });
+    }
  
 }

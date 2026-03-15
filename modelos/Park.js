@@ -9,4 +9,9 @@ class Park extends Building{
  
     // Setters
     setHappinessBonus(happinessBonus) { this._happinessBonus = happinessBonus; }
+
+    //in parks dont do anything but i put it because yes 
+    produce() {
+        return new ResourceTransaction({});
+    }
 }

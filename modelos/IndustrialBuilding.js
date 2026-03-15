@@ -18,4 +18,25 @@ class IndustrialBuilding extends Building{
     setProductionType(productionType) { this._productionType = productionType; }
     setEmployees(employees) { this._employees = employees; }
     setProducionAmount(producionAmount) { this._producionAmount = producionAmount; }
+
+
+    //generate money or food depend the building type 
+    //productionType: "money" (fábrica) o "food" (granja)
+    produce() {
+        if (this._productionType === "food") {
+            // Granja: produce food and consume water 
+            return new ResourceTransaction({
+                food: this._producionAmount,
+                water: -this._waterConsumption,
+                electricity: -this._electricityConsumption
+            });
+        } else {
+            // Fábrica: produce money, consume water and electrucity
+            return new ResourceTransaction({
+                money: this._producionAmount,
+                electricity: -this._electricityConsumption,
+                water: -this._waterConsumption
+            });
+        }
+    }
 }
