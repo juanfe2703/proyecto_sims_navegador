@@ -21,7 +21,12 @@ class Grid{
 
     setCell(cell) { this._cell = cell; }
     
-    Add_position(){
-        this._cell.push(new Cell());
+    // Add_position(){
+    //     this._cell.push(new Cell());
+    // }
+
+    //modificacion realizada al metodo Add_position ya que antes ignoraba el parametro
+    Add_position(cell){
+        this._cell.push(cell);
     }
 }
