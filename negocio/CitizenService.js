@@ -1,97 +1,165 @@
 class CitizenService {
-    //actualización citizen. ahora deberia devolver al ciudadano creado y tambien 
-    //podre agregarle luego una casa y un trabajo
+ 
+    // ─── Creation ────────────────────────────────────────────────────────────
+ 
+    /**
+     * create one citizen, then append him to the city and return him
+     * for asigned him a house and work inmediatly if we want
+     */
     createCitizen(city) {
-
-        const id = city.getCitizens().length + 1
-
-        const citizen = new Citizen(id)
-
-        city.addCitizen(citizen)
-
-        return citizen
+        const id = city.getCitizens().length + 1;
+        const citizen = new Citizen(id);
+        city.addCitizen(citizen);
+        return citizen;
     }
 
 
 
 
-    //asignar casita
-    assignHousing(city){
-        //with this i search citizens
-        const citizens = city.getCitizens()
-
-        //with this i search residential buildings
+        // ─── assing home ──────────────────────────────────────────────
+ 
+    /**
+     * look the citizens without home and assing one to the first 
+     * residential building with space
+     */
+    assignHousing(city) {
+        const citizens = city.getCitizens();
+ 
         const residentialBuildings = city.getBuildings().filter(
-            b => b.type === "residential"
-        )
-
-        //for eachc to see if the citizen have house, then find an empty house and finally give him
+            b => b instanceof ResidentialBuilding
+        );
+ 
         citizens.forEach(citizen => {
-
-            if(!citizen.home){
-
-                const house = residentialBuildings.find(
-                    building => building.hasSpace()
-                )
-
-                if(house){
-
-                    house.addResident(citizen)
-
-                    citizen.home = house
-
+            if (!citizen.hasHouse()) {
+                const house = residentialBuildings.find(b => b.hasSpace());
+ 
+                if (house) {
+                    house.addResident(citizen);
+                    citizen.setResidence(house);
                 }
-
             }
-
-        })
-
+        });
     }
 
 
 
 
-    assignJobs(city){
-        //got citizens
-        const citizens = city.getCitizens()
-
-        //search buildings with jobs
+    // ─── Employ assingment ────────────────────────────────────────────────
+ 
+    /**
+     * look the citizens without work and assing them to the first
+     * commercial or industrial building with space 
+     */
+    assignJobs(city) {
+        const citizens = city.getCitizens();
+ 
         const workplaces = city.getBuildings().filter(
-            b => b.type === "commercial" || b.type === "industrial"
-        )
-
-        //see if any citizen doesnt have job and find an empty job to asigned him
+            b => b instanceof CommercialBuilding || b instanceof IndustrialBuilding
+        );
+ 
         citizens.forEach(citizen => {
-
-            if(!citizen.job){
-
-                const job = workplaces.find(
-                    workplace => workplace.hasVacancy()
-                )
-
-                if(job){
-
-                    job.addWorker(citizen)
-
-                    citizen.job = job
-
+            if (!citizen.hasJob()) {
+                const workplace = workplaces.find(b => b.hasVacancy());
+ 
+                if (workplace) {
+                    workplace.addWorker(citizen);
+                    citizen.setWorkplace(workplace);
                 }
-
             }
-
-        })
-
+        });
     }
 
 
-    //this method will execute all
-     processCitizens(city){
 
-        this.assignHousing(city)
 
-        this.assignJobs(city)
 
+    // ─── Crecimiento de población ────────────────────────────────────────────
+ 
+    /**
+     * Create new citizens if the 3 conditions of the document are check
+     *   1. there are any house empty?
+     *   2. average happynes > 60
+     *   3. there are any work vacant? (hay empleos disponibles?)
+     *
+     * grouwth rate (tasa de crecimiento): between 1 and 3 citizens per turn (customisable)
+     */
+    growPopulation(city, growthRate = 3) {
+        const hasHousing = city.getBuildings()
+            .filter(b => b instanceof ResidentialBuilding)
+            .some(b => b.hasSpace());
+ 
+        const hasJobs = city.getBuildings()
+            .filter(b => b instanceof CommercialBuilding || b instanceof IndustrialBuilding)
+            .some(b => b.hasVacancy());
+ 
+        const avgHappiness = this._getAverageHappiness(city);
+ 
+        if (!hasHousing || !hasJobs || avgHappiness <= 60) {
+            return; // No se cumplen las condiciones, no crece la población
+        }
+ 
+        const newCitizens = Math.floor(Math.random() * growthRate) + 1;
+ 
+        for (let i = 0; i < newCitizens; i++) {
+            // Verificar en cada iteración que aún haya espacio
+            const stillHasHousing = city.getBuildings()
+                .filter(b => b instanceof ResidentialBuilding)
+                .some(b => b.hasSpace());
+ 
+            if (!stillHasHousing) break;
+ 
+            this.createCitizen(city);
+        }
     }
 
+
+
+
+
+    // ─── Complete procces per turn ──────────────────────────────────────────
+ 
+    /**
+     * 
+     * Execute the entire citizen cycle in order:
+     * growth (crecimiento) → housing assing → employment assing → happiness.
+     * TurnService call this method per any turn
+     */
+    processCitizens(city, growthRate = 3) {
+        this.growPopulation(city, growthRate);
+        this.assignHousing(city);
+        this.assignJobs(city);
+        this._updateHappiness(city);
+    }
+
+    // ─── Inside Helpers ────────────────────────────────────────────────────
+ 
+    /**
+     * calculate and update the happynes of all the citizens
+     * pass the city for that calculateHappines() can count
+     * services and parks actives
+     */
+    _updateHappiness(city) {
+        city.getCitizens().forEach(citizen => citizen.calculateHappiness(city));
+    }
+ 
+    /**
+     * return the average happines of the city (0 if there are not citizens)
+     */
+    _getAverageHappiness(city) {
+        const citizens = city.getCitizens();
+        if (citizens.length === 0) return 0;
+ 
+        const total = citizens.reduce((sum, c) => sum + c.getHappiness(), 0);
+        return total / citizens.length;
+    }
+ 
+    /**
+     * return the average happines in public form
+     * este puede serle util para el panel de estadisticas y el ScoreService señor Cano
+     * (útil para el panel de estadísticas y ScoreService).
+     */
+    getAverageHappiness(city) {
+        return this._getAverageHappiness(city);
+    }
     
 }
