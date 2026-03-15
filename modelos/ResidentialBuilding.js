@@ -22,4 +22,20 @@ class ResidentialBuilding extends Building {
             water: -this._waterConsumption
         });
     }
+
+
+    // Helpers For CitizenService------------------------------------------------------------------------------
+    hasSpace() {
+        return this._citizens.length < this._capacity;
+    }
+ 
+    addResident(citizen) {
+        if (this.hasSpace()) {
+            this._citizens.push(citizen);
+        }
+    }
+ 
+    removeResident(citizen) {
+        this._citizens = this._citizens.filter(c => c !== citizen);
+    }
 }

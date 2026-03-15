@@ -16,6 +16,20 @@ class CommercialBuilding extends Building {
     setEmployees(employees) { this._employees = employees; }
     setIncomePerTurn(incomePerTurn) { this._incomePerTurn = incomePerTurn; }
 
+    // Helpers for CitizenService
+    hasVacancy() {
+        return this._employees.length < this._jobs;
+    }
+ 
+    addWorker(citizen) {
+        if (this.hasVacancy()) {
+            this._employees.push(citizen);
+        }
+    }
+ 
+    removeWorker(citizen) {
+        this._employees = this._employees.filter(e => e !== citizen);
+    }
 
     //this method generate increases if there's electricity
     //if electricityConsumption > 0 but there's no electricity, it not work 

@@ -19,6 +19,20 @@ class IndustrialBuilding extends Building{
     setEmployees(employees) { this._employees = employees; }
     setProducionAmount(producionAmount) { this._producionAmount = producionAmount; }
 
+    // Helpers for CitizenService
+    hasVacancy() {
+        return this._employees.length < this._jobs;
+    }
+ 
+    addWorker(citizen) {
+        if (this.hasVacancy()) {
+            this._employees.push(citizen);
+        }
+    }
+ 
+    removeWorker(citizen) {
+        this._employees = this._employees.filter(e => e !== citizen);
+    }
 
     //generate money or food depend the building type 
     //productionType: "money" (fábrica) o "food" (granja)
