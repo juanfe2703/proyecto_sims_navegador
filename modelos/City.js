@@ -23,6 +23,7 @@ class City {
         this._score = null
         this._turn = 0
         this._climate = null;
+        this._News = null;
     }
 
     // Getters: devuelven el valor actual de cada atributo
@@ -37,6 +38,7 @@ class City {
     getScore() { return this._score }
     getTurn() { return this._turn }
     getClimate() { return this._climate }
+    getNews() { return this._News }
 
     // Setters: actualizan el valor de cada atributo (con validaciones simples)
     setNameCity(name_city) {
@@ -69,6 +71,7 @@ class City {
     setResources(resources) { this._resources = resources }
     setScore(score) { this._score = score }
     setTurn(turn) { this._turn = turn }
+    setNews(news) { this._News = news }
     setClimate(climate) { 
         if(climate == null) {
             throw new Error("Problema con la generacion del clima");
@@ -91,6 +94,7 @@ class City {
         this._citizens.push(citizen)
     }
 
+   
 
     Create_climate(){
         const apiClimate = new ApiClimate();
@@ -110,9 +114,32 @@ class City {
         })
     }
 
+    Create_news(){
+        const apiNews = new ApiNews();
+        return apiNews.getCurrentNews(this._location).then(news => {
+            if(news){
+                console.log("Noticia obtenida con exito: " + news);
+                return new News(
+                    news.title,
+                    news.summary,
+                    news.link,
+                    news.media
+                );
+            }else{
+                return null;
+            }
+        })
+    }
+
     async ensureClimate(){
         const myClimate = await this.Create_climate();
         this.setClimate(myClimate);
         return myClimate;
+    }
+
+    async ensureNews(){
+        const myNews = await this.Create_news();
+        this.setNews(myNews);
+        return myNews;
     }
 }

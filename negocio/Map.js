@@ -90,6 +90,14 @@ function Creacion_city(City_datos){
      City_datos._climate.humidity,
      City_datos._climate.icon
     );
+
+    let myNews = new News(
+        City_datos._News._title,
+        City_datos._News._summary,
+        City_datos._News._link,
+        City_datos._News._media
+    )
+    myCity.setNews(myNews);
     myCity.setClimate(myClimate);
 
     return myCity;

@@ -84,7 +84,8 @@ document.addEventListener("DOMContentLoaded",function(){
 
             // Resuelve la promesa del clima y deja la ciudad lista para usar más adelante
             await myCity.ensureClimate();
-
+            await myCity.ensureNews();
+            
             alert("Ciudad creada exitosamente");
             console.log("Ciudad creada con exito" + myCity);
             return myCity;
