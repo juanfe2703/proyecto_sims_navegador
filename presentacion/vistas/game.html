@@ -17,10 +17,24 @@
     <script defer src="../../acceso_a_datos/ApiClimate.js"></script>
 </head>
 <body>
-        <div  id = "Container" class="container-fluid p-3">
-            <div class="row">
+        <div  id = "Container" class="container-fluid p-2">
+            <div class="row g-0">
                 <div class="col-auto sidebar-left px-0"></div>
-                <div class="col map-container px-0" id="id_city"></div>
+                <div id="map-col" class="col px-0">
+                    <div class="container-fluid px-0">
+                        <div id="map-viewport" class="w-100 overflow-auto">
+                            <div class="map-container" id="id_city"></div>
+                        </div>
+                        <div class="row zoom-controls g-0 p-2 ">
+                            <div class="col">
+                                <button id = "zoom-in" class="btn btn-dark w-100">+</button>
+                            </div>
+                            <div class="col">
+                                <button id = "zoom-out" class="btn btn-dark w-100">-</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="col-auto sidebar-right px-0 d-flex flex-column gap-3">
                     <div id = "weather-panel" class = "panel flex-grow-1 p-2">
                         <div id = "weather-info"></div>

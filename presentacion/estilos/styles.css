@@ -12,8 +12,17 @@ body {
     gap: 0;
     border: 1px solid #81C784;
     box-sizing: border-box;
-    width: 90%;
-    height: 100%;
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+}
+
+#map-viewport {
+    max-height: 75vh;
+}
+
+#map-col {
+    min-width: 0;
 }
 .cell {
     width: 100%;
@@ -153,4 +162,23 @@ body {
 
 .news-item{
     margin-bottom: 20px;
+}
+
+#zoom-in{
+    background: #C8E6C9;
+    border: 2px solid #81C784;
+}
+
+#zoom-out{
+    background: #C8E6C9;
+    border: 2px solid #81C784;
+}
+
+.zoom-controls {
+    gap: 10px;
+}
+
+#zoom-in:hover, #zoom-out:hover {
+    background: #2E7D32;
+    cursor: pointer;
 }

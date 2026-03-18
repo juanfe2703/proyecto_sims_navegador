@@ -10,7 +10,34 @@ document.addEventListener("DOMContentLoaded",function(){
     let gridElement = document.getElementById("id_city");
     let weather_content = document.getElementById("weather-info")
     let news_content = document.getElementById("news")
+    let zoom_out = document.getElementById("zoom-out");
+    let zoom_in = document.getElementById("zoom-in");
+    let zoom_controls = document.querySelector(".zoom-controls");
+    let zoom_level = 1; // Nivel de zoom inicial
 
+    function Apply_zoom() {
+        const widthPercent = `${zoom_level * 100}%`;
+        gridElement.style.width = widthPercent;
+        if (zoom_controls) {
+            zoom_controls.style.width = widthPercent;
+            zoom_controls.style.marginLeft = "auto";
+            zoom_controls.style.marginRight = "auto";
+        }
+    }
+
+    zoom_in.addEventListener("click", function() {
+        zoom_level = Math.min(2, zoom_level + 0.1);
+        Apply_zoom();
+    });
+
+    zoom_out.addEventListener("click", function() {
+        zoom_level = Math.max(0.5, zoom_level - 0.1);
+        Apply_zoom();
+    });
+
+    Apply_zoom();
+
+    
     setInterval(function(){
             myCity.ensureClimate()
                 .then(() => Weather_print(myCity.getClimate()))
