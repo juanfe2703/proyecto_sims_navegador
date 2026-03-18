@@ -12,12 +12,7 @@ class ApiNews {
                 return response.json();
             })
             .then(data => {
-                return data.articles.map(article => ({
-                    title: article.title,
-                    description: article.description,
-                    url: article.url,
-                    image: article.image
-                }));
+                return data.articles;
             })
             .catch(error => {
                 console.error("Error al obtener noticias:", error);

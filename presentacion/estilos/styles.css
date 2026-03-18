@@ -1,9 +1,19 @@
+body {
+    background: linear-gradient(
+        180deg,
+        #F1F8F4 0%,
+        #E8F5E9 50%,
+        #DFF3E3 100%
+    );
+}
 #id_city {
     display: grid;
     aspect-ratio: 1 / 1;
     gap: 0;
     border: 1px solid #81C784;
     box-sizing: border-box;
+    width: 90%;
+    height: 100%;
 }
 .cell {
     width: 100%;
@@ -28,7 +38,7 @@
 
 #weather-info {
     background: #374151;
-    padding: 15px;           /* espacio interno simétrico */
+    padding: 10px;           /* más compacto */
     color: #F3F4F6;
     border-radius: 8px;
     border: 2px solid #1F2937;
@@ -43,20 +53,104 @@
 #weather-panel {
     height: fit-content;
     overflow-y: auto;
-    max-height: 300px;
-    padding: 20px;           /* espacio uniforme desde los bordes */
+    max-height: 200px;
+    padding: 12px;           /* más compacto */
     background: #1F2937;
     border-radius: 8px;
     display: flex;
-    flex-direction: column;  /* coloca los hijos en columna */
+    flex-direction: column;
     gap: 10px;               /* espacio entre hijos */
 }
 
-#weather-info :hover {
+#weather-info:hover {
     background: #4B5563;
     border-radius: 8px;
 }
 
 .details{
     margin-top: 5px;
+}
+
+/* Compactar el contenido del clima (vía IDs definidos en JS) */
+#weather-content .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#CityName {
+    font-size: 14px;
+    margin: 0;
+}
+
+#Icon {
+    width: 34px;
+    height: 34px;
+}
+
+#TempValue {
+    font-size: 22px;
+}
+
+#Condition,
+#Humidity {
+    margin: 2px 0;
+    font-size: 12px;
+}
+
+.image-container {
+    width: 100%;
+    height: 150px;
+    overflow: hidden;
+}
+
+.news-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.Text-container {
+    padding: 10px;
+}
+
+.news-title {
+    font-size: 14px;
+    color: #F3F4F6;
+    margin: 5px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* 🔑 máximo 2 líneas */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.news-description {
+    font-size: 12px;
+    color: #D1D5DB;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.news-link {
+    font-size: 12px;
+    color: #81C784;
+    text-decoration: none;
+}
+
+.Container {
+    display: flex;
+    align-items: center;
+}
+
+.news-item:hover {
+    background: #4B5563;
+    border-radius: 8px;   
+}
+
+.news-item{
+    margin-bottom: 20px;
 }

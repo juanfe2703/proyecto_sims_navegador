@@ -80,6 +80,7 @@ class City {
         }
         
     }
+
     incrementTurn() { this._turn++ }
 
     addBuilding(building) {
@@ -93,8 +94,6 @@ class City {
     addCitizen(citizen) {
         this._citizens.push(citizen)
     }
-
-   
 
     Create_climate(){
         const apiClimate = new ApiClimate();
@@ -116,18 +115,19 @@ class City {
 
     Create_news(){
         const apiNews = new ApiNews();
-        return apiNews.getCurrentNews(this._location).then(news => {
-            if(news){
-                console.log("Noticia obtenida con exito: " + news);
-                return new News(
-                    news.title,
-                    news.summary,
-                    news.link,
-                    news.media
-                );
-            }else{
-                return null;
-            }
+        return apiNews.getCurrentNews(this._location).then(news_articles => {
+            if (!news_articles) return null;
+
+            let new_list = [];
+            news_articles.forEach(new_current => {
+                let title = new_current.title;
+                let summary = new_current.description;
+                let link = new_current.url;
+                let media = new_current.image;
+                let new_obj = new News(title, summary, link, media);
+                new_list.push(new_obj);
+            });
+            return new_list;
         })
     }
 
