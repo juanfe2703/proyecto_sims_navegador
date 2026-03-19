@@ -1,184 +1,194 @@
+/* Estilos generales del juego (mapa, paneles y widgets). */
+
 body {
     background: linear-gradient(
         180deg,
         #F1F8F4 0%,
         #E8F5E9 50%,
         #DFF3E3 100%
-    );
+    ); /* fondo degradado */
 }
 #id_city {
-    display: grid;
-    aspect-ratio: 1 / 1;
-    gap: 0;
-    border: 1px solid #81C784;
-    box-sizing: border-box;
-    width: 100%;
-    height: auto;
-    margin: 0 auto;
+    display: grid; /* layout en grilla */
+    aspect-ratio: 1 / 1; /* mantener cuadrado */
+    gap: 0; /* sin separación */
+    border: 1px solid #81C784; /* borde del mapa */
+    box-sizing: border-box; /* caja incluye borde */
+    width: 100%; /* ancho completo */
+    margin: 0 auto; /* centrar horizontal */
+    display: grid; /* layout flexible */
 }
 
 #map-viewport {
-    max-height: 75vh;
+    max-height: none; /* alto máximo del mapa (más grande) */
+    overflow: auto; /* scroll cuando excede */
+
+    scrollbar-width: none; /* ocultar scrollbar (Firefox) */
+    -ms-overflow-style: none; /* ocultar scrollbar (IE/Edge legacy) */
+}
+
+#map-viewport::-webkit-scrollbar {
+    display: none; /* ocultar scrollbar (WebKit) */
 }
 
 #map-col {
-    min-width: 0;
+    min-width: 0; /* permitir encogerse en flex/grid */
 }
 .cell {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    border: 1px solid #81C784;
-    background: #C8E6C9;
+    width: 100%; /* ocupa toda la celda */
+    aspect-ratio: 1 / 1; /* mantener cuadrado */
+    border: 1px solid #81C784; /* borde de celda */
+    background: #C8E6C9; /* color base */
 }
 
 .cell:hover {
-    background: #2E7D32;
-    cursor: pointer;
+    background: #2E7D32; /* resaltar al pasar */
+    cursor: pointer; /* indicar interacción */
 }
 
 .sidebar-left{
-    width: 250px;
+    width: 250px; /* ancho sidebar izquierda */
 }
 
 .sidebar-right{
-    width: 300px;
+    width: 300px; /* ancho sidebar derecha */
 }
 
 
 #weather-info {
-    background: #374151;
-    padding: 10px;           /* más compacto */
-    color: #F3F4F6;
-    border-radius: 8px;
-    border: 2px solid #1F2937;
+    background: #374151; /* fondo del widget */
+    padding: 10px;           /* padding más compacto */
+    color: #F3F4F6; /* color del texto */
+    border-radius: 8px; /* bordes redondeados */
+    border: 2px solid #1F2937; /* borde oscuro */
 }
 
 .panel{
-    background: #1F2937;    
-    margin-left: 10px;
-    border-radius: 8px;
+    background: #1F2937; /* fondo del panel */
+    margin-left: 10px; /* separación izquierda */
+    border-radius: 8px; /* redondeo */
 }
 
 #weather-panel {
-    height: fit-content;
-    overflow-y: auto;
-    max-height: 200px;
-    padding: 12px;           /* más compacto */
-    background: #1F2937;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
+    height: fit-content; /* ajustar al contenido */
+    overflow-y: auto; /* scroll vertical */
+    max-height: 200px; /* alto máximo */
+    padding: 12px;           /* padding más compacto */
+    background: #1F2937; /* fondo */
+    border-radius: 8px; /* redondeo */
+    display: flex; /* layout flexible */
+    flex-direction: column; /* apilar en columna */
     gap: 10px;               /* espacio entre hijos */
 }
 
 #weather-info:hover {
-    background: #4B5563;
-    border-radius: 8px;
+    background: #4B5563; /* fondo al pasar */
+    border-radius: 8px; /* mantener redondeo */
 }
 
 .details{
-    margin-top: 5px;
+    margin-top: 5px; /* separación superior */
 }
 
 /* Compactar el contenido del clima (vía IDs definidos en JS) */
 #weather-content .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    display: flex; /* layout flexible */
+    align-items: center; /* centrar vertical */
+    justify-content: space-between; /* separar extremos */
+    gap: 10px; /* espacio entre elementos */
 }
 
 #CityName {
-    font-size: 14px;
-    margin: 0;
+    font-size: 14px; /* tamaño del nombre */
+    margin: 0; /* sin margen */
 }
 
 #Icon {
-    width: 34px;
-    height: 34px;
+    width: 34px; /* ancho del icono */
+    height: 34px; /* alto del icono */
 }
 
 #TempValue {
-    font-size: 22px;
+    font-size: 22px; /* tamaño temperatura */
 }
 
 #Condition,
 #Humidity {
-    margin: 2px 0;
-    font-size: 12px;
+    margin: 2px 0; /* margen compacto */
+    font-size: 12px; /* texto secundario */
 }
 
 .image-container {
-    width: 100%;
-    height: 150px;
-    overflow: hidden;
+    width: 100%; /* ancho completo */
+    height: 150px; /* alto fijo */
+    overflow: hidden; /* recortar desborde */
 }
 
 .news-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 8px;
+    width: 100%; /* ajustar al contenedor */
+    height: 100%; /* ajustar al contenedor */
+    object-fit: cover; /* recorte sin deformar */
+    border-radius: 8px; /* redondeo */
 }
 
 .Text-container {
-    padding: 10px;
+    padding: 10px; /* padding del texto */
 }
 
 .news-title {
-    font-size: 14px;
-    color: #F3F4F6;
-    margin: 5px 0;
-    display: -webkit-box;
-    -webkit-line-clamp: 2; /* 🔑 máximo 2 líneas */
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: 14px; /* tamaño del título */
+    color: #F3F4F6; /* color del título */
+    margin: 5px 0; /* margen vertical */
+    display: -webkit-box; /* modo caja WebKit */
+    -webkit-line-clamp: 2; /* limita a 2 líneas */
+    -webkit-box-orient: vertical; /* orientar en vertical */
+    overflow: hidden; /* ocultar excedente */
 }
 
 .news-description {
-    font-size: 12px;
-    color: #D1D5DB;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    font-size: 12px; /* tamaño descripción */
+    color: #D1D5DB; /* color descripción */
+    display: -webkit-box; /* modo caja WebKit */
+    -webkit-line-clamp: 2; /* limita a 2 líneas */
+    -webkit-box-orient: vertical; /* orientar en vertical */
+    overflow: hidden; /* ocultar excedente */
 }
 
 .news-link {
-    font-size: 12px;
-    color: #81C784;
-    text-decoration: none;
+    font-size: 12px; /* tamaño enlace */
+    color: #81C784; /* color del enlace */
+    text-decoration: none; /* sin subrayado */
 }
 
 .Container {
-    display: flex;
-    align-items: center;
+    display: flex; /* layout flexible */
+    align-items: center; /* centrar vertical */
 }
 
 .news-item:hover {
-    background: #4B5563;
-    border-radius: 8px;   
+    background: #4B5563; /* resaltar al pasar */
+    border-radius: 8px; /* redondeo */
 }
 
 .news-item{
-    margin-bottom: 20px;
+    margin-bottom: 20px; /* separación entre noticias */
 }
 
 #zoom-in{
-    background: #C8E6C9;
-    border: 2px solid #81C784;
+    background: #C8E6C9; /* fondo botón */
+    border: 2px solid #81C784; /* borde botón */
 }
 
 #zoom-out{
-    background: #C8E6C9;
-    border: 2px solid #81C784;
+    background: #C8E6C9; /* fondo botón */
+    border: 2px solid #81C784; /* borde botón */
 }
 
 .zoom-controls {
-    gap: 10px;
+    gap: 10px; /* espacio entre controles */
 }
 
 #zoom-in:hover, #zoom-out:hover {
-    background: #2E7D32;
-    cursor: pointer;
+    background: #2E7D32; /* color al pasar */
+    cursor: pointer; /* indicar clic */
 }

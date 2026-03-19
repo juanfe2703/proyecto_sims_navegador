@@ -12,32 +12,34 @@ document.addEventListener("DOMContentLoaded",function(){
     let news_content = document.getElementById("news")
     let zoom_out = document.getElementById("zoom-out");
     let zoom_in = document.getElementById("zoom-in");
-    let zoom_controls = document.querySelector(".zoom-controls");
-    let zoom_level = 1; // Nivel de zoom inicial
-
-    function Apply_zoom() {
-        const widthPercent = `${zoom_level * 100}%`;
-        gridElement.style.width = widthPercent;
-        if (zoom_controls) {
-            zoom_controls.style.width = widthPercent;
-            zoom_controls.style.marginLeft = "auto";
-            zoom_controls.style.marginRight = "auto";
-        }
-    }
+    let zoom_level = 1; // Nivel de zoom inicial (mapa más grande)
 
     zoom_in.addEventListener("click", function() {
-        zoom_level = Math.min(2, zoom_level + 0.1);
-        Apply_zoom();
+        if (zoom_level > 2 ){
+            zoom_level = 2; // Limita el nivel de zoom máximo
+            alert("Nivel de zoom máximo alcanzado");
+        }else{
+            zoom_level += 0.1; // Incrementa el nivel de zoom
+            Apply_zoom();
+        }       
     });
 
     zoom_out.addEventListener("click", function() {
-        zoom_level = Math.max(0.5, zoom_level - 0.1);
-        Apply_zoom();
+        if (zoom_level < 0.5){
+            zoom_level = 0.5; // Limita el nivel de zoom mínimo
+            alert("Nivel de zoom mínimo alcanzado");
+        }else{
+            zoom_level -= 0.1; // Decrementa el nivel de zoom
+            Apply_zoom();
+        }
     });
 
-    Apply_zoom();
+    function Apply_zoom() {
+        // Lógica para aplicar el zoom
+        gridElement.style.transformOrigin = "center center"; // Establece el origen del zoom en el centro del mapa
+        gridElement.style.transform = `scale(${zoom_level})`;
+    }
 
-    
     setInterval(function(){
             myCity.ensureClimate()
                 .then(() => Weather_print(myCity.getClimate()))
