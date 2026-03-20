@@ -48,10 +48,12 @@ body {
 
 .sidebar-left{
     width: 250px; /* ancho sidebar izquierda */
+    margin-right: 10px; /* espacio entre sidebar y mapa */
 }
 
 .sidebar-right{
     width: 300px; /* ancho sidebar derecha */
+    margin-left: 10px; /* separación izquierda */   
 }
 
 
@@ -65,7 +67,6 @@ body {
 
 .panel{
     background: #1F2937; /* fondo del panel */
-    margin-left: 10px; /* separación izquierda */
     border-radius: 8px; /* redondeo */
 }
 
@@ -79,6 +80,19 @@ body {
     display: flex; /* layout flexible */
     flex-direction: column; /* apilar en columna */
     gap: 10px;               /* espacio entre hijos */
+}
+
+/* Panel de información de ciudad: mismo tema que el acordeón */
+#city-panel{
+    background: #ba8057;
+    border: 4px solid #6D4C41;
+    border-radius: 8px;
+    color: #F3F4F6;
+}
+
+#city-panel h5{
+    color: #F3F4F6;
+    margin: 0;
 }
 
 #weather-info:hover {
@@ -120,7 +134,7 @@ body {
 
 .image-container {
     width: 100%; /* ancho completo */
-    height: 150px; /* alto fijo */
+    height: 100px; /* alto fijo */
     overflow: hidden; /* recortar desborde */
 }
 
@@ -141,6 +155,7 @@ body {
     margin: 5px 0; /* margen vertical */
     display: -webkit-box; /* modo caja WebKit */
     -webkit-line-clamp: 2; /* limita a 2 líneas */
+    line-clamp: 2; /* propiedad estándar (compatibilidad) */
     -webkit-box-orient: vertical; /* orientar en vertical */
     overflow: hidden; /* ocultar excedente */
 }
@@ -150,6 +165,7 @@ body {
     color: #D1D5DB; /* color descripción */
     display: -webkit-box; /* modo caja WebKit */
     -webkit-line-clamp: 2; /* limita a 2 líneas */
+    line-clamp: 2; /* propiedad estándar (compatibilidad) */
     -webkit-box-orient: vertical; /* orientar en vertical */
     overflow: hidden; /* ocultar excedente */
 }
@@ -192,3 +208,86 @@ body {
     background: #2E7D32; /* color al pasar */
     cursor: pointer; /* indicar clic */
 }
+
+.building-img{
+    width: 40px; /* ancho fijo */
+    height: 40px; /* alto fijo */
+    max-width: 40px; /* evitar que crezca */
+    max-height: 40px; /* evitar que crezca */
+    object-fit: contain; /* ajustar sin deformar */
+    display: block; /* evitar espacios baseline */ 
+}
+
+.building-item{
+    overflow: hidden; /* impedir desbordes */
+    transition: background-color 0.2s ease;
+}
+
+#building-accordion .building-item:hover{
+    background: #c28a63; /* resaltar al pasar */
+    border-radius: 8px; /* redondeo */
+    cursor: pointer; /* indicar interacción */
+}
+
+.building-img-header{
+    width: 40px; /* tamaño del icono en el header */
+    height: 40px; /* tamaño del icono en el header */
+    object-fit: contain; /* ajustar sin deformar */
+    display: block;
+    margin-left: auto;
+}
+
+
+#building-accordion{
+    background: #ba8057; /* fondo del acordeón */
+    border-radius: 8px; /* bordes redondeados */
+}
+
+#building-accordion .accordion-item{
+    background: #ba8057;
+    border: 4px solid #6D4C41;
+}
+
+#building-accordion .accordion-button{
+    background: #c28a63; /* marrón para el header (más claro para ver la flecha) */
+    color: #F3F4F6; /* texto claro como panel derecho */
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+#building-accordion .accordion-button:not(.collapsed){
+    background: #c28a63;
+    color: #F3F4F6;
+    box-shadow: none;
+}
+
+#building-accordion .accordion-button:focus{
+    box-shadow: none;
+}
+
+/* Flecha blanca del acordeón (simple, sin filter/SVG) */
+#building-accordion .accordion-button::after{
+    background-image: none;
+    content: "";
+    display: block;
+    margin-left: auto;
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 9px solid #FFFFFF; /* triángulo hacia abajo */
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+}
+
+#building-accordion .accordion-button:not(.collapsed)::after{
+    transform: rotate(180deg); /* triángulo hacia arriba */
+}
+
+#building-accordion .accordion-body{
+    background: #ba8057;
+    color: #F3F4F6;
+}
+
+
