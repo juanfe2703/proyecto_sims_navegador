@@ -10,6 +10,9 @@ class CitizenService {
         const id = city.getCitizens().length + 1;
         const citizen = new Citizen(id);
         city.addCitizen(citizen);
+        // Calcular felicidad inicial inmediatamente para que el proximo
+        // turno ya tenga datos reales (no el valor por defecto 50)
+        citizen.calculateHappiness(city);
         return citizen;
     }
 
@@ -87,16 +90,21 @@ class CitizenService {
         const hasHousing = city.getBuildings()
             .filter(b => b instanceof ResidentialBuilding)
             .some(b => b.hasSpace());
- 
+
         const hasJobs = city.getBuildings()
             .filter(b => b instanceof CommercialBuilding || b instanceof IndustrialBuilding)
             .some(b => b.hasVacancy());
- 
+
+        // Si no hay vivienda o empleo disponible, no puede crecer
+        if (!hasHousing || !hasJobs) return;
+
+        const population   = city.getCitizens().length;
         const avgHappiness = this._getAverageHappiness(city);
- 
-        if (!hasHousing || !hasJobs || avgHappiness <= 60) {
-            return; // No se cumplen las condiciones, no crece la población
-        }
+
+        // La condicion de felicidad solo aplica cuando ya hay ciudadanos.
+        // Con ciudad vacia la felicidad es 0, lo que bloquearia para siempre
+        // el primer ciudadano (circulo vicioso).
+        if (population > 0 && avgHappiness <= 60) return;
  
         const newCitizens = Math.floor(Math.random() * growthRate) + 1;
  
