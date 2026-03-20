@@ -45,15 +45,16 @@ class City {
         if (name_city.length <= 50) {
             this._name_city = name_city;
         } else {
-            throw new("No es un nombre  de ciudad valido ")
+            throw new Error("No es un nombre de ciudad valido")
         }
     }
+
 
     setNamePlayer(name_player) { 
         if (name_player.length <= 50) {
             this._name_player = name_player;
         } else {
-            throw new("No es un nombre  de jugador valido ")
+            throw new Error("No es un nombre de jugador valido")
         }
     }
 
@@ -61,7 +62,7 @@ class City {
         if (location.length <= 50) {
             this._location = location;
         } else {
-            throw new("No es una ubicacion valida ")
+            throw new Error("No es una ubicacion valida")
         }
     }
 
