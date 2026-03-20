@@ -25,12 +25,22 @@ class Citizen {
         this._hasHouse = building !== null
     }
 
-    calculateHappiness() {
+    // Recibe la ciudad para poder contar servicios y parques activos
+    calculateHappiness(city) {
         let base = 50
-
-        if (this._hasHouse) base += 20
-        if (this._hasJob) base += 20
-
-        this._happiness = base
+ 
+        if (this._hasHouse) base += 20   // +20 por tener vivienda
+        if (this._hasJob)   base += 15   // +15 por tener empleo 
+ 
+        // Bonos por servicios publicos y parques (afectan a todos los ciudadanos)
+        if (city) {
+            city.getBuildings().forEach(b => {
+                if (b instanceof ServiceBuilding) base += b.getHappinessBoost()
+                if (b instanceof Park)            base += b.getHappinessBonus()
+            })
+        }
+ 
+        // Clamp entre 0 y 100
+        this._happiness = Math.max(0, Math.min(100, base))
     }
 }
