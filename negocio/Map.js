@@ -120,11 +120,11 @@ document.addEventListener("DOMContentLoaded",function(){
      * @returns {Cell} Instancia de Cell con x/y seteadas.
      */
     function Create_position(x, y){
-        myCell = new Cell();
+        myCell = new Cell(x, y, "empty");
         myCell.setX(x);
         myCell.setY(y)
         console.log(myCell);
-        return myCell;   
+        return myCell; 
     }
    
     Map_generation(myCity.getGrid().getWidth(), myCity.getGrid().getHeight());
@@ -179,9 +179,9 @@ function Creacion_city(City_datos){
      * @returns {Cell} Instancia de Cell con x/y seteadas.
      */
 function Create_position(x, y){
-        myCell = new Cell();
+        myCell = new Cell(x, y, "empty");
         myCell.setX(x);
         myCell.setY(y)
         console.log(myCell);
-        return myCell;   
+        return myCell; 
 }
