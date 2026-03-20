@@ -1,140 +1,174 @@
 // ─── Save ─────────────────────────────────────────────────────────────────
- 
-/**
- * Serializa la ciudad completa a localStorage.
- * turnService call this function in each turn
- */
+
 function saveCity(city) {
-    localStorage.setItem("city", JSON.stringify(city))
+    localStorage.setItem("city", JSON.stringify(city));
 }
- 
-/**
- * Alias para compatibilidad con el código existente en City_panel.js.
- */
+
+// Alias usado en City_panel.js
 function loadCity(city) {
-    saveCity(city)
+    saveCity(city);
 }
- 
-// ─── Load ───────────────────────────────────────────────────────────────────
- 
+
+// ─── Load ─────────────────────────────────────────────────────────────────
+
 /**
- * read the JSON of localstorage and rebuild all the object instances
- * Retorna una instancia de City lista para usar, o null si no hay partida guardada.
+ * Lee el JSON del localStorage y reconstruye todas las instancias de objetos.
+ * Retorna una instancia de City lista para usar, o null si no hay partida.
+ * Maneja de forma segura datos nulos o partidas guardadas con versiones anteriores.
  */
 function loadCityFromStorage() {
-    const raw = localStorage.getItem("city")
-    if (!raw) return null
- 
-    const data = JSON.parse(raw)
-    const city = new City()
- 
-    // Datos básicos
-    city.setNameCity(data._name_city)
-    city.setNamePlayer(data._name_player)
-    city.setLocation(data._location)
-    city.setTurn(data._turn)
- 
-    // Grid y celdas
-    const grid = new Grid()
-    grid.setWidth(data._grid._width)
-    grid.setHeight(data._grid._height)
- 
-    data._grid._cell.forEach(cellData => {
-        const cell = new Cell(cellData._x, cellData._y, cellData._type)
- 
-        // Reconstruir edificio en la celda
-        if (cellData._building) {
-            const building = _deserializeBuilding(cellData._building, cellData._type)
-            if (building) {
-                cell.setBuilding(building)
-                city.addBuilding(building)
+    const raw = localStorage.getItem("city");
+    if (!raw) return null;
+
+    let data;
+    try {
+        data = JSON.parse(raw);
+    } catch(e) {
+        console.error("Error al parsear la ciudad del localStorage:", e);
+        return null;
+    }
+
+    try {
+        const city = new City();
+
+        // ── Datos basicos ────────────────────────────────────────────────────
+        city.setNameCity(data._name_city   || "Ciudad");
+        city.setNamePlayer(data._name_player || "Alcalde");
+        city.setLocation(data._location    || "");
+        city.setTurn(data._turn            || 0);
+
+        // ── Grid y celdas ────────────────────────────────────────────────────
+        const grid = new Grid();
+        grid.setWidth( data._grid._width);
+        grid.setHeight(data._grid._height);
+
+        const cells = data._grid._cell || [];
+        cells.forEach(cellData => {
+            const cell = new Cell(cellData._x, cellData._y, cellData._type || "empty");
+
+            if (cellData._building) {
+                const building = _deserializeBuilding(cellData._building, cellData._type);
+                if (building) {
+                    cell.setBuilding(building);
+                    city.addBuilding(building);
+                }
+            }
+
+            if (cellData._road) {
+                cell.setRoad(new Road(cellData._road._cost || 100));
+            }
+
+            grid.Add_position(cell);
+        });
+
+        city.setGrid(grid);
+
+        // ── Recursos ─────────────────────────────────────────────────────────
+        const r = data._resources;
+        if (r) {
+            city.setResources(new Resources(
+                r._money       || 50000,
+                r._electricity || 0,
+                r._water       || 0,
+                r._food        || 0
+            ));
+        } else {
+            // Partida guardada sin recursos (version antigua) - valores iniciales
+            city.setResources(new Resources(50000, 0, 0, 0));
+        }
+
+        // ── Ciudadanos ───────────────────────────────────────────────────────
+        const citizens = data._citizens || [];
+        citizens.forEach(cData => {
+            const citizen = new Citizen(cData._id);
+            citizen._happiness = cData._happiness || 50;
+            city.addCitizen(citizen);
+        });
+
+        // ── Score ────────────────────────────────────────────────────────────
+        const score = new Score();
+        score.calculate(city);
+        city.setScore(score);
+
+        // ── Clima (opcional) ─────────────────────────────────────────────────
+        const c = data._climate;
+        if (c) {
+            try {
+                city.setClimate(new Climate(
+                    c.city            || c._city            || "",
+                    c.temperature_c   || c._temperature_c   || 0,
+                    c.condition       || c._condition       || "",
+                    c.humidity        || c._humidity        || 0,
+                    c.icon            || c._icon            || ""
+                ));
+            } catch(e) {
+                console.warn("No se pudo restaurar el clima:", e.message);
             }
         }
- 
-        // Reconstruir vía en la celda
-        if (cellData._road) {
-            cell.setRoad(new Road(cellData._road._cost))
+
+        // ── Noticias (opcional) ──────────────────────────────────────────────
+        const newsList = data._News || data._news;
+        if (newsList && Array.isArray(newsList)) {
+            const rebuilt = newsList.map(n => new News(
+                n._title   || n.title   || "",
+                n._summary || n.summary || "",
+                n._link    || n.link    || "",
+                n._media   || n.media   || ""
+            ));
+            city.setNews(rebuilt);
         }
- 
-        grid.Add_position(cell)
-    })
- 
-    city.setGrid(grid)
- 
-    // Recursos
-    const r = data._resources
-    city.setResources(new Resources(r._money, r._electricity, r._water, r._food))
- 
-    // Ciudadanos (sin re-asignar vivienda/trabajo — ya están en los edificios)
-    data._citizens.forEach(cData => {
-        const citizen = new Citizen(cData._id)
-        citizen._happiness = cData._happiness
-        // Las referencias a edificios se pierden en el JSON, se reasignan
-        // en el primer processCitizens() del siguiente turno
-        city.addCitizen(citizen)
-    })
- 
-    // Score
-    const score = new Score()
-    score.calculate(city)
-    city.setScore(score)
- 
-    // Clima
-    if (data._climate) {
-        city.setClimate(new Climate(
-            data._climate.city || data._climate._city,
-            data._climate.temperature_c || data._climate._temperature_c,
-            data._climate.condition || data._climate._condition,
-            data._climate.humidity || data._climate._humidity,
-            data._climate.icon || data._climate._icon
-        ))
+
+        return city;
+
+    } catch(e) {
+        console.error("Error al reconstruir la ciudad:", e);
+        return null;
     }
- 
-    return city
 }
- 
-/**
- * ¿Existe una partida guardada en localStorage?
- */
+
 function hasSavedCity() {
-    return localStorage.getItem("city") !== null
+    return localStorage.getItem("city") !== null;
 }
- 
-/**
- * Elimina la partida guardada.
- */
+
 function deleteSavedCity() {
-    localStorage.removeItem("city")
+    localStorage.removeItem("city");
 }
- 
-// ─── Helper interno ───────────────────────────────────────────────────────────
- 
-/**
- * Reconstruye la instancia correcta de edificio a partir de los datos JSON
- * y el tipo de celda guardado.
- */
+
+// ─── Deserializacion de edificios ────────────────────────────────────────────
+
 function _deserializeBuilding(b, type) {
-    switch (type) {
-        case "house":
-            return new ResidentialBuilding(b._id, b._name, b._cost, b._maintenanceCost, b._electricityConsumption, b._waterConsumption, b._capacity)
-        case "apartment":
-            return new ResidentialBuilding(b._id, b._name, b._cost, b._maintenanceCost, b._electricityConsumption, b._waterConsumption, b._capacity)
-        case "shop":
-        case "mall":
-            return new CommercialBuilding(b._id, b._name, b._cost, b._maintenanceCost, b._electricityConsumption, b._waterConsumption, b._jobs, b._incomePerTurn)
-        case "factory":
-        case "farm":
-            return new IndustrialBuilding(b._id, b._name, b._cost, b._maintenanceCost, b._electricityConsumption, b._waterConsumption, b._jobs, b._productionType, b._producionAmount)
-        case "police":
-        case "fire":
-        case "hospital":
-            return new ServiceBuilding(b._id, b._name, b._cost, b._maintenanceCost, b._electricityConsumption, b._waterConsumption, b._radius, b._happinessBoost)
-        case "electric_plant":
-        case "water_plant":
-            return new UtilityPlant(b._id, b._name, b._cost, b._maintenanceCost, b._electricityConsumption, b._waterConsumption, b._productionType, b._productionAmount)
-        case "park":
-            return new Park(b._id, b._name, b._cost, b._maintenanceCost, b._happinessBonus)
-        default:
-            return null
+    try {
+        switch (type) {
+            case "house":
+            case "apartment":
+                return new ResidentialBuilding(b._id, b._name, b._cost, b._maintenanceCost,
+                    b._electricityConsumption, b._waterConsumption, b._capacity);
+            case "shop":
+            case "mall":
+                return new CommercialBuilding(b._id, b._name, b._cost, b._maintenanceCost,
+                    b._electricityConsumption, b._waterConsumption, b._jobs, b._incomePerTurn);
+            case "factory":
+            case "farm":
+                return new IndustrialBuilding(b._id, b._name, b._cost, b._maintenanceCost,
+                    b._electricityConsumption, b._waterConsumption, b._jobs,
+                    b._productionType, b._producionAmount);
+            case "police":
+            case "fire":
+            case "hospital":
+                return new ServiceBuilding(b._id, b._name, b._cost, b._maintenanceCost,
+                    b._electricityConsumption, b._waterConsumption, b._radius, b._happinessBoost);
+            case "electric_plant":
+            case "water_plant":
+                return new UtilityPlant(b._id, b._name, b._cost, b._maintenanceCost,
+                    b._electricityConsumption, b._waterConsumption,
+                    b._productionType, b._productionAmount);
+            case "park":
+                return new Park(b._id, b._name, b._cost, b._maintenanceCost, b._happinessBonus);
+            default:
+                return null;
+        }
+    } catch(e) {
+        console.warn("No se pudo deserializar edificio tipo:", type, e.message);
+        return null;
     }
 }

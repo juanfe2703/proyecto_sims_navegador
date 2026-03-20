@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>City Builder - Juego</title>
-
+ 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
           rel="stylesheet" crossorigin="anonymous">
-
+ 
     <!-- Estilos del juego -->
     <link rel="stylesheet" href="../estilos/styles.css">
     <link rel="stylesheet" href="../estilos/game_extra.css">
-
+ 
     <!-- ── Modelos ──────────────────────────────────────────────────── -->
     <script defer src="../../modelos/ResourceTransaction.js"></script>
     <script defer src="../../modelos/Resources.js"></script>
+    <script defer src="../../modelos/Road.js"></script>
+    <script defer src="../../modelos/Cell.js"></script>
+    <script defer src="../../modelos/Grid.js"></script>
     <script defer src="../../modelos/Building.js"></script>
     <script defer src="../../modelos/ResidentialBuilding.js"></script>
     <script defer src="../../modelos/CommercialBuilding.js"></script>
@@ -23,55 +26,52 @@
     <script defer src="../../modelos/ServiceBuilding.js"></script>
     <script defer src="../../modelos/UtilityPlant.js"></script>
     <script defer src="../../modelos/Park.js"></script>
-    <script defer src="../../modelos/Road.js"></script>
-    <script defer src="../../modelos/Cell.js"></script>
-    <script defer src="../../modelos/Grid.js"></script>
     <script defer src="../../modelos/Citizen.js"></script>
     <script defer src="../../modelos/Score.js"></script>
     <script defer src="../../modelos/Climate.js"></script>
     <script defer src="../../modelos/News.js"></script>
     <script defer src="../../modelos/City.js"></script>
-
+ 
     <!-- ── Acceso a datos ───────────────────────────────────────────── -->
     <script defer src="../../acceso_a_datos/StorageService.js"></script>
     <script defer src="../../acceso_a_datos/ApiClimate.js"></script>
     <script defer src="../../acceso_a_datos/NewsService.js"></script>
-
+ 
     <!-- ── Servicios de negocio ─────────────────────────────────────── -->
     <script defer src="../../negocio/BuildingService.js"></script>
     <script defer src="../../negocio/CitizenService.js"></script>
     <script defer src="../../negocio/ScoreService.js"></script>
     <script defer src="../../negocio/TurnService.js"></script>
     <script defer src="../../negocio/RoutingService.js"></script>
-
-    <!-- ── Controlador principal (DEBE IR AL FINAL) ─────────────────── -->
+ 
+    <!-- Map.js primero (zoom, clima, noticias), luego el controlador -->
     <script defer src="../../negocio/Map.js"></script>
     <script defer src="../../negocio/game_controller.js"></script>
-
+ 
     <!-- Bootstrap JS -->
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
             crossorigin="anonymous"></script>
 </head>
 <body>
-
+ 
 <div id="Container" class="container-fluid p-2">
     <div class="row g-0">
-
+ 
         <!-- ══════════════ SIDEBAR IZQUIERDO ══════════════ -->
         <div class="col-auto sidebar-left px-0 d-flex flex-column gap-2">
-
+ 
             <!-- Info ciudad -->
             <div id="city-panel" class="p-2">
                 <h5>Ciudad</h5>
                 <div id="city-info"></div>
             </div>
-
+ 
             <!-- Recursos -->
             <div id="resources-container" class="p-2">
                 <h6 class="text-light mb-1">Recursos</h6>
                 <div id="resources-panel"></div>
             </div>
-
+ 
             <!-- Puntuacion y turno -->
             <div class="p-2 score-panel">
                 <div class="d-flex justify-content-between text-light">
@@ -81,7 +81,7 @@
                     <small>Puntuacion:</small><small id="score-value">0</small>
                 </div>
             </div>
-
+ 
             <!-- Controles del juego -->
             <div class="p-2 controls-panel d-flex flex-column gap-1">
                 <div class="d-flex gap-1">
@@ -106,7 +106,7 @@
                 <div id="mode-indicator" class="text-warning text-center"
                      style="font-size:11px;min-height:16px;"></div>
             </div>
-
+ 
             <!-- Menu de edificios (acordeon) -->
             <div class="accordion" id="building-accordion">
                 <div class="accordion-item">
@@ -120,7 +120,7 @@
                     <div id="collapseBuildings" class="accordion-collapse collapse show">
                         <div class="accordion-body p-1">
                             <div id="building-list" class="d-flex flex-column gap-1">
-
+ 
                                 <!-- Residenciales -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">RESIDENCIAL</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="house">
@@ -131,7 +131,7 @@
                                     <img src="../../recourses/apartamento.png" class="building-img" alt="">
                                     <div><span class="building-name">Apartamento</span><br><small class="text-muted">$3,000 · 12 hab.</small></div>
                                 </div>
-
+ 
                                 <!-- Comerciales -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">COMERCIAL</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="shop">
@@ -142,7 +142,7 @@
                                     <img src="../../recourses/centro-comercial.png" class="building-img" alt="">
                                     <div><span class="building-name">Centro Comercial</span><br><small class="text-muted">$8,000 · +$2,000/t</small></div>
                                 </div>
-
+ 
                                 <!-- Industriales -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">INDUSTRIAL</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="factory">
@@ -153,7 +153,7 @@
                                     <img src="../../recourses/granja.png" class="building-img" alt="">
                                     <div><span class="building-name">Granja</span><br><small class="text-muted">$3,000 · +50 food/t</small></div>
                                 </div>
-
+ 
                                 <!-- Servicios -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">SERVICIOS</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="police">
@@ -168,7 +168,7 @@
                                     <img src="../../recourses/hospital.png" class="building-img" alt="">
                                     <div><span class="building-name">Hospital</span><br><small class="text-muted">$6,000 · +10 fel.</small></div>
                                 </div>
-
+ 
                                 <!-- Utilidades -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">UTILIDADES</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="electric_plant">
@@ -179,7 +179,7 @@
                                     <img src="../../recourses/filtro-de-agua.png" class="building-img" alt="">
                                     <div><span class="building-name">Planta de Agua</span><br><small class="text-muted">$8,000 · +150 💧/t</small></div>
                                 </div>
-
+ 
                                 <!-- Parque y via -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">OTROS</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="park">
@@ -190,17 +190,17 @@
                                     <img src="../../recourses/camino.png" class="building-img" alt="">
                                     <div><span class="building-name">Via</span><br><small class="text-muted">$100 por celda</small></div>
                                 </div>
-
+ 
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-
+ 
         </div>
         <!-- ══ fin sidebar izquierdo ══ -->
-
-
+ 
+ 
         <!-- ══════════════ MAPA CENTRAL ══════════════ -->
         <div id="map-col" class="col px-0">
             <div class="container-fluid px-0">
@@ -218,36 +218,36 @@
             </div>
         </div>
         <!-- ══ fin mapa central ══ -->
-
-
+ 
+ 
         <!-- ══════════════ SIDEBAR DERECHO ══════════════ -->
         <div class="col-auto sidebar-right px-0 d-flex flex-column gap-2">
-
+ 
             <!-- Info de edificio seleccionado -->
             <div id="building-info-panel" class="p-2" style="display:none;">
                 <h6 class="text-light">Informacion</h6>
                 <!-- Se llena desde game_controller.js -->
             </div>
-
+ 
             <!-- Widget clima -->
             <div id="weather-panel" class="panel flex-grow-0 p-2">
                 <div id="weather-info">
                     <small class="text-secondary">Cargando clima...</small>
                 </div>
             </div>
-
+ 
             <!-- Panel noticias -->
             <div class="panel flex-grow-1 p-2" style="overflow-y:auto;max-height:420px;">
                 <div id="news">
                     <small class="text-secondary">Cargando noticias...</small>
                 </div>
             </div>
-
+ 
         </div>
         <!-- ══ fin sidebar derecho ══ -->
-
+ 
     </div>
 </div>
-
+ 
 </body>
 </html>

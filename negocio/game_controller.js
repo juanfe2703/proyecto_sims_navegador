@@ -1,7 +1,8 @@
 /**
  * game_controller.js
  * Controlador principal del juego.
- * Conecta toda la logica con el HTML de game.html.
+ * Se expone como funcion global initGameController()
+ * que es invocada por Map.js despues de su DOMContentLoaded.
  *
  * Modos de interaccion con el mapa:
  *   "none"     - sin modo activo (ver info al hacer clic)
@@ -10,10 +11,10 @@
  *   "route"    - calcular ruta (2 clics: origen y destino)
  */
 
-document.addEventListener("DOMContentLoaded", function () {
+function initGameController() {
 
     // ─── 1. Cargar ciudad desde localStorage ────────────────────────────────
-    let myCity = loadCityFromStorage();
+    const myCity = loadCityFromStorage();
 
     if (!myCity) {
         alert("No hay partida guardada. Redirigiendo al menu principal...");
@@ -21,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // Inicializar recursos si vienen nulos (partida nueva sin recursos seteados)
+    // Inicializar recursos si vienen nulos
     if (!myCity.getResources()) {
         myCity.setResources(new Resources(50000, 0, 0, 0));
     }
@@ -29,16 +30,19 @@ document.addEventListener("DOMContentLoaded", function () {
         myCity.setScore(new Score());
     }
 
+    // Exponer la ciudad globalmente para Map.js (clima/noticias)
+    window.gameCity = myCity;
+
     // ─── 2. Servicios ───────────────────────────────────────────────────────
     const buildingService = new BuildingService();
     const turnService     = new TurnService();
     const routingService  = new RoutingService();
 
     // ─── 3. Estado del controlador ──────────────────────────────────────────
-    let currentMode      = "none";   // "none" | "build" | "demolish" | "route"
-    let selectedType     = null;     // tipo de edificio seleccionado ("house", "road", ...)
-    let routeOrigin      = null;     // Building seleccionado como origen de ruta
-    let highlightedCells = [];       // celdas pintadas de la ruta actual
+    let currentMode      = "none";
+    let selectedType     = null;
+    let routeOrigin      = null;
+    let highlightedCells = [];
 
     // ─── 4. Referencias al DOM ──────────────────────────────────────────────
     const gridEl         = document.getElementById("id_city");
@@ -65,31 +69,30 @@ document.addEventListener("DOMContentLoaded", function () {
         gridEl.style.gridTemplateColumns = `repeat(${width}, 1fr)`;
         gridEl.style.gridTemplateRows    = `repeat(${height}, 1fr)`;
 
-        // Si el grid no tiene celdas aun (nueva partida sin celdas renderizadas)
+        // Crear celdas del modelo si no existen todavia
         if (grid.getCell().length === 0) {
             for (let y = 0; y < height; y++) {
                 for (let x = 0; x < width; x++) {
-                    const cell = new Cell(x, y, "empty");
-                    grid.Add_position(cell);
+                    grid.Add_position(new Cell(x, y, "empty"));
                 }
             }
         }
 
-        // Construir HTML del mapa
+        // Generar HTML del mapa
         let html = "";
         for (let y = 0; y < height; y++) {
             for (let x = 0; x < width; x++) {
                 const cell = grid.getCell().find(c => c.getX() === x && c.getY() === y);
                 const cls  = getCellClass(cell);
                 const img  = getCellImage(cell);
-                html += `<div class="cell ${cls}" data-x="${x}" data-y="${y}">
-                            ${img ? `<img src="${img}" class="cell-img" alt="">` : ""}
-                         </div>`;
+                html += `<div class="cell ${cls}" data-x="${x}" data-y="${y}">`
+                      + (img ? `<img src="${img}" class="cell-img" alt="">` : "")
+                      + `</div>`;
             }
         }
         gridEl.innerHTML = html;
 
-        // Agregar listeners a cada celda
+        // Listeners de clic en cada celda
         gridEl.querySelectorAll(".cell").forEach(cellDiv => {
             cellDiv.addEventListener("click", onCellClick);
         });
@@ -105,92 +108,85 @@ document.addEventListener("DOMContentLoaded", function () {
     function getCellImage(cell) {
         if (!cell) return null;
         const imgMap = {
-            "house":          "../../recourses/casa.png",
-            "apartment":      "../../recourses/apartamento.png",
-            "shop":           "../../recourses/tienda.png",
-            "mall":           "../../recourses/centro-comercial.png",
-            "factory":        "../../recourses/fabrica-electrica.png",
-            "farm":           "../../recourses/granja.png",
-            "police":         "../../recourses/estacion-de-policia.png",
-            "fire":           "../../recourses/bombero.png",
-            "hospital":       "../../recourses/hospital.png",
-            "electric_plant": "../../recourses/fabrica-electrica.png",
-            "water_plant":    "../../recourses/filtro-de-agua.png",
-            "park":           "../../recourses/naturaleza.png",
-            "road":           "../../recourses/camino.png"
+            house:          "../../recourses/casa.png",
+            apartment:      "../../recourses/apartamento.png",
+            shop:           "../../recourses/tienda.png",
+            mall:           "../../recourses/centro-comercial.png",
+            factory:        "../../recourses/fabrica-electrica.png",
+            farm:           "../../recourses/granja.png",
+            police:         "../../recourses/estacion-de-policia.png",
+            fire:           "../../recourses/bombero.png",
+            hospital:       "../../recourses/hospital.png",
+            electric_plant: "../../recourses/fabrica-electrica.png",
+            water_plant:    "../../recourses/filtro-de-agua.png",
+            park:           "../../recourses/naturaleza.png",
+            road:           "../../recourses/camino.png"
         };
         if (cell.getRoad())     return imgMap["road"];
         if (cell.getBuilding()) return imgMap[cell.getType()] || null;
         return null;
     }
 
-    // Re-renderizar solo la celda que cambio (eficiente)
+    // Actualizar solo la celda visual que cambio
     function refreshCell(x, y) {
         const cell    = myCity.getGrid().getCell().find(c => c.getX() === x && c.getY() === y);
         const cellDiv = gridEl.querySelector(`[data-x="${x}"][data-y="${y}"]`);
         if (!cellDiv || !cell) return;
-
         cellDiv.className = "cell " + getCellClass(cell);
         const img = getCellImage(cell);
         cellDiv.innerHTML = img ? `<img src="${img}" class="cell-img" alt="">` : "";
     }
 
-    // ─── 6. Panel de informacion ─────────────────────────────────────────────
+    // ─── 6. Paneles de informacion ───────────────────────────────────────────
 
     function updateInfoPanels() {
-        // Info basica de la ciudad
         if (cityInfoEl) {
             cityInfoEl.innerHTML = `
                 <p><strong>${myCity.getNameCity()}</strong></p>
                 <p>Alcalde: ${myCity.getNamePlayer()}</p>
-                <p>Ubicacion: ${myCity.getLocation()}</p>
-            `;
+                <p>Region: ${myCity.getLocation()}</p>`;
         }
 
-        // Recursos
         const r = myCity.getResources();
         if (resourcesEl) {
-            const moneyColor = r.getMoney() > 10000 ? "text-success"
-                             : r.getMoney() < 1000  ? "text-danger"
-                             : "text-warning";
+            const moneyCls = r.getMoney() > 10000 ? "text-success"
+                           : r.getMoney() < 1000  ? "text-danger"
+                           : "text-warning";
             resourcesEl.innerHTML = `
                 <div class="resource-row">
-                    <span>💰 Dinero:</span>
-                    <span class="${moneyColor}">$${r.getMoney().toLocaleString()}</span>
+                    <span>💰 Dinero</span>
+                    <span class="${moneyCls}">$${r.getMoney().toLocaleString()}</span>
                 </div>
                 <div class="resource-row">
-                    <span>⚡ Electricidad:</span>
-                    <span class="${r.getElectricity() < 0 ? "text-danger" : "text-light"}">${r.getElectricity()}</span>
+                    <span>⚡ Electricidad</span>
+                    <span class="${r.getElectricity() < 0 ? "text-danger":"text-light"}">${r.getElectricity()}</span>
                 </div>
                 <div class="resource-row">
-                    <span>💧 Agua:</span>
-                    <span class="${r.getWater() < 0 ? "text-danger" : "text-light"}">${r.getWater()}</span>
+                    <span>💧 Agua</span>
+                    <span class="${r.getWater() < 0 ? "text-danger":"text-light"}">${r.getWater()}</span>
                 </div>
                 <div class="resource-row">
-                    <span>🌽 Alimentos:</span>
+                    <span>🌽 Alimentos</span>
                     <span class="text-light">${r.getFood()}</span>
                 </div>
                 <div class="resource-row">
-                    <span>👥 Poblacion:</span>
+                    <span>👥 Poblacion</span>
                     <span class="text-light">${myCity.getCitizens().length}</span>
                 </div>
                 <div class="resource-row">
-                    <span>😊 Felicidad:</span>
+                    <span>😊 Felicidad</span>
                     <span class="text-light">${getAvgHappiness()}%</span>
-                </div>
-            `;
+                </div>`;
         }
 
-        // Puntuacion y turno
         if (scoreEl) scoreEl.textContent = myCity.getScore() ? myCity.getScore().getTotal() : 0;
         if (turnEl)  turnEl.textContent  = myCity.getTurn();
     }
 
     function getAvgHappiness() {
-        const citizens = myCity.getCitizens();
-        if (citizens.length === 0) return 0;
-        const sum = citizens.reduce((acc, c) => acc + c.getHappiness(), 0);
-        return Math.round(sum / citizens.length);
+        const c = myCity.getCitizens();
+        if (!c.length) return 0;
+        return Math.round(c.reduce((s, ci) => s + ci.getHappiness(), 0) / c.length);
     }
 
     // ─── 7. Interaccion con el mapa ──────────────────────────────────────────
@@ -199,7 +195,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const x = parseInt(e.currentTarget.dataset.x);
         const y = parseInt(e.currentTarget.dataset.y);
 
-        if (currentMode === "build")    handleBuild(x, y);
+        if      (currentMode === "build")    handleBuild(x, y);
         else if (currentMode === "demolish") handleDemolish(x, y);
         else if (currentMode === "route")    handleRoute(x, y);
         else                                 handleInfo(x, y);
@@ -207,13 +203,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function handleBuild(x, y) {
         if (!selectedType) return;
-
-        let result;
-        if (selectedType === "road") {
-            result = buildingService.placeRoad(myCity, x, y);
-        } else {
-            result = buildingService.placeBuilding(myCity, selectedType, x, y);
-        }
+        const result = selectedType === "road"
+            ? buildingService.placeRoad(myCity, x, y)
+            : buildingService.placeBuilding(myCity, selectedType, x, y);
 
         showToast(result.message, result.ok ? "success" : "danger");
         if (result.ok) {
@@ -229,7 +221,6 @@ document.addEventListener("DOMContentLoaded", function () {
             showToast("No hay nada que demoler aqui.", "warning");
             return;
         }
-
         const name = cell.getBuilding() ? cell.getBuilding().getName() : "Via";
         if (!confirm(`¿Demoler ${name}? Recuperaras el 50% del costo.`)) return;
 
@@ -248,17 +239,14 @@ document.addEventListener("DOMContentLoaded", function () {
             showToast("Selecciona un edificio para la ruta.", "warning");
             return;
         }
-
         if (!routeOrigin) {
-            // Primer clic: origen
             routeOrigin = cell.getBuilding();
-            const cellDiv = gridEl.querySelector(`[data-x="${x}"][data-y="${y}"]`);
-            if (cellDiv) cellDiv.classList.add("cell-route-origin");
-            showToast(`Origen: ${routeOrigin.getName()}. Ahora selecciona el destino.`, "info");
+            const div = gridEl.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+            if (div) div.classList.add("cell-route-origin");
+            showToast(`Origen: ${routeOrigin.getName()}. Selecciona el destino.`, "info");
         } else {
-            // Segundo clic: destino, calcular ruta
             if (cell.getBuilding() === routeOrigin) {
-                showToast("El destino debe ser un edificio diferente al origen.", "warning");
+                showToast("El destino debe ser diferente al origen.", "warning");
                 return;
             }
             calculateAndShowRoute(routeOrigin, cell.getBuilding());
@@ -269,90 +257,65 @@ document.addEventListener("DOMContentLoaded", function () {
     async function calculateAndShowRoute(origin, destination) {
         showToast("Calculando ruta...", "info");
         clearRouteHighlight();
-
         const result = await routingService.calculateRoute(myCity, origin, destination);
+        if (!result.ok) { showToast(result.message, "danger"); return; }
 
-        if (!result.ok) {
-            showToast(result.message, "danger");
-            return;
-        }
-
-        // Pintar la ruta en el mapa
         result.route.forEach(([row, col]) => {
-            const cellDiv = gridEl.querySelector(`[data-x="${col}"][data-y="${row}"]`);
-            if (cellDiv) {
-                cellDiv.classList.add("cell-route");
-                highlightedCells.push(cellDiv);
-            }
+            const div = gridEl.querySelector(`[data-x="${col}"][data-y="${row}"]`);
+            if (div) { div.classList.add("cell-route"); highlightedCells.push(div); }
         });
-
         showToast(result.message, "success");
-
-        // Limpiar la ruta despues de 5 segundos
         setTimeout(clearRouteHighlight, 5000);
     }
 
     function clearRouteHighlight() {
-        highlightedCells.forEach(div => {
-            div.classList.remove("cell-route", "cell-route-origin");
-        });
+        highlightedCells.forEach(d => d.classList.remove("cell-route", "cell-route-origin"));
         highlightedCells = [];
-        // Limpiar tambien cualquier origen marcado
         gridEl.querySelectorAll(".cell-route-origin").forEach(d => d.classList.remove("cell-route-origin"));
     }
 
     function handleInfo(x, y) {
         const cell = myCity.getGrid().getCell().find(c => c.getX() === x && c.getY() === y);
-        if (!cell) return;
-
-        if (!buildingInfoEl) return;
+        if (!cell || !buildingInfoEl) return;
 
         if (cell.getRoad()) {
             buildingInfoEl.innerHTML = `
                 <h6>Via</h6>
                 <p>Coordenadas: (${x}, ${y})</p>
                 <p>Costo: $100</p>
-                <button class="btn btn-sm btn-danger mt-2" onclick="demolishAt(${x},${y})">Demoler</button>
-            `;
+                <button class="btn btn-sm btn-danger mt-2" onclick="demolishAt(${x},${y})">Demoler</button>`;
             buildingInfoEl.style.display = "block";
             return;
         }
 
         const b = cell.getBuilding();
-        if (!b) {
-            buildingInfoEl.style.display = "none";
-            return;
-        }
+        if (!b) { buildingInfoEl.style.display = "none"; return; }
 
         let extra = "";
-        if (b instanceof ResidentialBuilding) {
+        if (b instanceof ResidentialBuilding)
             extra = `<p>Capacidad: ${b.getCitizens().length} / ${b.getCapacity()} hab.</p>`;
-        } else if (b instanceof CommercialBuilding || b instanceof IndustrialBuilding) {
+        else if (b instanceof CommercialBuilding || b instanceof IndustrialBuilding)
             extra = `<p>Empleados: ${b.getEmployees().length} / ${b.getJobs()}</p>`;
-        } else if (b instanceof ServiceBuilding) {
-            extra = `<p>Radio de influencia: ${b.getRadius()} celdas</p>
-                     <p>Bonus felicidad: +${b.getHappinessBoost()}</p>`;
-        }
+        else if (b instanceof ServiceBuilding)
+            extra = `<p>Radio: ${b.getRadius()} celdas · +${b.getHappinessBoost()} felicidad</p>`;
 
         buildingInfoEl.innerHTML = `
             <h6>${b.getName()}</h6>
-            <p>Costo construccion: $${b.getCost().toLocaleString()}</p>
-            <p>Mantenimiento/turno: $${b.getMaintenanceCost()}</p>
-            <p>Consumo electricidad: ${b.getElectricityConsumption()} u/t</p>
-            <p>Consumo agua: ${b.getWaterConsumption()} u/t</p>
+            <p>Costo: $${b.getCost().toLocaleString()}</p>
+            <p>Mantenimiento/t: $${b.getMaintenanceCost()}</p>
+            <p>⚡ Consumo: ${b.getElectricityConsumption()} u/t</p>
+            <p>💧 Consumo: ${b.getWaterConsumption()} u/t</p>
             ${extra}
-            <button class="btn btn-sm btn-danger mt-2" onclick="demolishAt(${x},${y})">Demoler</button>
-        `;
+            <button class="btn btn-sm btn-danger mt-2" onclick="demolishAt(${x},${y})">Demoler</button>`;
         buildingInfoEl.style.display = "block";
     }
 
-    // Funcion global para demoler desde el panel de info
     window.demolishAt = function(x, y) {
         handleDemolish(x, y);
         if (buildingInfoEl) buildingInfoEl.style.display = "none";
     };
 
-    // ─── 8. Seleccion de edificio en el menu ─────────────────────────────────
+    // ─── 8. Menu de edificios ────────────────────────────────────────────────
 
     document.querySelectorAll(".building-item[data-type]").forEach(item => {
         item.addEventListener("click", function () {
@@ -360,7 +323,8 @@ document.addEventListener("DOMContentLoaded", function () {
             setMode("build");
             document.querySelectorAll(".building-item").forEach(i => i.classList.remove("selected"));
             this.classList.add("selected");
-            showToast(`Modo construccion: ${this.querySelector(".building-name").textContent}`, "info");
+            const label = this.querySelector(".building-name");
+            showToast(`Modo construccion: ${label ? label.textContent : selectedType}`, "info");
         });
     });
 
@@ -373,7 +337,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 showToast("Modo demolicion desactivado.", "secondary");
             } else {
                 setMode("demolish");
-                showToast("Modo demolicion activado. Haz clic en un edificio o via.", "warning");
+                showToast("Modo demolicion activado. Clic en edificio o via.", "warning");
             }
         });
     }
@@ -387,7 +351,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 showToast("Modo ruta desactivado.", "secondary");
             } else {
                 setMode("route");
-                showToast("Modo ruta activado. Selecciona el edificio de origen.", "info");
+                showToast("Modo ruta: selecciona el edificio origen.", "info");
             }
         });
     }
@@ -395,15 +359,19 @@ document.addEventListener("DOMContentLoaded", function () {
     if (pauseBtn) {
         pauseBtn.addEventListener("click", function () {
             const speed = turnSpeedInput ? parseInt(turnSpeedInput.value) || 10 : 10;
-            const rate  = growthInput   ? parseInt(growthInput.value)   || 3  : 3;
+            const rate  = growthInput    ? parseInt(growthInput.value)   || 3  : 3;
 
-            turnService.toggleTimer(myCity, speed, {
-                growthRate:  rate,
-                onTurnEnd:   onTurnEnd,
-                onGameOver:  onGameOver
-            });
-
-            this.textContent = turnService.isRunning() ? "⏸ Pausar" : "▶ Reanudar";
+            if (turnService.isRunning()) {
+                turnService.stopTimer();
+                this.textContent = "▶ Reanudar";
+            } else {
+                turnService.startTimer(myCity, speed, {
+                    growthRate: rate,
+                    onTurnEnd:  onTurnEnd,
+                    onGameOver: onGameOver
+                });
+                this.textContent = "⏸ Pausar";
+            }
         });
     }
 
@@ -418,33 +386,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function setMode(mode) {
         currentMode = mode;
-        if (mode !== "build") selectedType = null;
-        if (mode !== "route") { routeOrigin = null; clearRouteHighlight(); }
+        if (mode !== "build")   selectedType = null;
+        if (mode !== "route")   { routeOrigin = null; clearRouteHighlight(); }
 
-        // Actualizar cursor del mapa
         gridEl.style.cursor = mode === "none" ? "default" : "crosshair";
-
-        // Resaltar boton activo
-        if (demolishBtn) demolishBtn.classList.toggle("btn-warning", mode === "demolish");
-        if (routeBtn)    routeBtn.classList.toggle("btn-info",    mode === "route");
-        if (mode !== "build") {
-            document.querySelectorAll(".building-item").forEach(i => i.classList.remove("selected"));
-        }
+        if (demolishBtn) demolishBtn.classList.toggle("btn-warning",  mode === "demolish");
+        if (routeBtn)    routeBtn.classList.toggle("btn-info",        mode === "route");
+        if (mode !== "build") document.querySelectorAll(".building-item").forEach(i => i.classList.remove("selected"));
 
         if (modeIndicator) {
-            const labels = { none: "", build: "Construyendo", demolish: "Demoliendo", route: "Trazando ruta" };
-            modeIndicator.textContent = labels[mode] || "";
+            modeIndicator.textContent = { none:"", build:"Construyendo", demolish:"Demoliendo", route:"Trazando ruta" }[mode] || "";
         }
     }
 
     // ─── 11. Callbacks del TurnService ──────────────────────────────────────
 
-    function onTurnEnd(city) {
-        updateInfoPanels();
-    }
+    function onTurnEnd() { updateInfoPanels(); }
 
     function onGameOver(message) {
-        pauseBtn.textContent = "▶ Reanudar";
+        if (pauseBtn) pauseBtn.textContent = "▶ Iniciar";
         alert("GAME OVER: " + message);
     }
 
@@ -458,34 +418,26 @@ document.addEventListener("DOMContentLoaded", function () {
             container.style.cssText = "position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;";
             document.body.appendChild(container);
         }
-
         const toast = document.createElement("div");
         toast.className = `alert alert-${type} py-2 px-3 mb-0`;
         toast.style.cssText = "min-width:220px;max-width:320px;font-size:13px;box-shadow:0 2px 8px rgba(0,0,0,0.3);";
         toast.textContent = message;
         container.appendChild(toast);
-
         setTimeout(() => toast.remove(), 3000);
     }
 
     // ─── 13. Guardado automatico cada 30 segundos ───────────────────────────
-    setInterval(function () {
-        saveCity(myCity);
-    }, 30000);
+    setInterval(() => saveCity(myCity), 30000);
 
     // ─── 14. Arranque ───────────────────────────────────────────────────────
     renderMap();
     updateInfoPanels();
 
-    // Iniciar el timer de turnos automaticamente (10 seg por defecto)
-    const initialSpeed = turnSpeedInput ? parseInt(turnSpeedInput.value) || 10 : 10;
-    const initialRate  = growthInput    ? parseInt(growthInput.value)   || 3  : 3;
-    turnService.startTimer(myCity, initialSpeed, {
-        growthRate: initialRate,
-        onTurnEnd:  onTurnEnd,
-        onGameOver: onGameOver
-    });
-    if (pauseBtn) pauseBtn.textContent = "⏸ Pausar";
+    // Mostrar clima y noticias iniciales
+    if (myCity.getClimate() && typeof weatherPrint === "function") weatherPrint(myCity.getClimate());
+    if (myCity.getNews()    && typeof newsPrint    === "function") newsPrint(myCity.getNews());
 
-    console.log("game_controller.js cargado. Ciudad:", myCity.getNameCity());
-});
+    if (pauseBtn) pauseBtn.textContent = "▶ Iniciar";
+    console.log("Game controller listo. Ciudad:", myCity.getNameCity(),
+                "| Grid:", myCity.getGrid().getWidth(), "x", myCity.getGrid().getHeight());
+}
