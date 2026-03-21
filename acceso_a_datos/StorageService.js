@@ -3,6 +3,7 @@
 function saveCity(city) {
     const data = serializeCity(city);
     localStorage.setItem("city", JSON.stringify(data));
+    console.log(city + "[saveCity] Ciudad guardada:", data);
 }
  
 function loadCity(city) { saveCity(city); }

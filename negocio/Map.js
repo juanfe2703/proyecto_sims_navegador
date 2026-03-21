@@ -14,7 +14,7 @@ function initMap() {
     if (zoom_in) {
         zoom_in.addEventListener("click", function () {
             zoom_level = Math.min(2, parseFloat((zoom_level + 0.1).toFixed(1)));
-            gridElement.style.transformOrigin = "top left";
+            gridElement.style.transformOrigin = "top center"; // Mantener el origen del zoom en la parte superior central
             gridElement.style.transform = `scale(${zoom_level})`;
         });
     }
@@ -22,7 +22,7 @@ function initMap() {
     if (zoom_out) {
         zoom_out.addEventListener("click", function () {
             zoom_level = Math.max(0.5, parseFloat((zoom_level - 0.1).toFixed(1)));
-            gridElement.style.transformOrigin = "top left";
+            gridElement.style.transformOrigin = "top center"; // Mantener el origen del zoom en la parte superior central
             gridElement.style.transform = `scale(${zoom_level})`;
         });
     }
