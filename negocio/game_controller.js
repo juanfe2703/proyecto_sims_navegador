@@ -49,6 +49,14 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
     const turnSpeedInput = document.getElementById("turn-speed");
     const growthInput    = document.getElementById("growth-rate");
 
+    // Si ya hubo Game Over y navegaste a otra página, al volver lo restaura
+    try {
+        if (sessionStorage.getItem("gameOverActive") === "1") {
+            const reason = sessionStorage.getItem("gameOverReason") || "Game Over";
+            onGameOver(reason);
+        }
+    } catch {}
+
     // Navegar a la vista de puntajes (ranking)
     if (cityInfoEl) {
         cityInfoEl.addEventListener("click", function (e) {
@@ -333,8 +341,42 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
 
     function onTurnEnd() { updateInfoPanels(); } // Al terminar un turno: refrescar paneles
     function onGameOver(msg) {
+        try {
+            sessionStorage.setItem("gameOverActive", "1");
+            sessionStorage.setItem("gameOverReason", msg ?? "Game Over");
+        } catch {}
+
         if (pauseBtn) pauseBtn.textContent="▶ Iniciar"; // Deja el botón listo para iniciar
-        alert("GAME OVER: "+msg); // Muestra motivo de fin de partida
+        const goEl = document.getElementById("Game_over_modal");
+        if (!goEl) {
+            console.warn("GAME OVER (sin #Game_over_modal):", msg);
+            return;
+        }
+        // Motivo
+        const reasonEl = goEl.querySelector("[data-gameover-reason]");
+        if (reasonEl) reasonEl.textContent = msg;
+        else goEl.textContent = msg;
+
+        // Mostrar overlay
+        goEl.hidden = false;
+
+        // Bloquear interacción (no modificar nada)
+        try { if (typeof turnService?.stopTimer === "function") turnService.stopTimer(); } catch {}
+        try { setMode("none"); } catch {}
+
+        if (gridEl) gridEl.style.pointerEvents = "none";
+        const mapViewport = document.getElementById("map-viewport");
+        if (mapViewport) mapViewport.style.pointerEvents = "none";
+
+        // Deshabilitar botones principales (evita cambios de estado)
+        if (pauseBtn) pauseBtn.disabled = true;
+        if (saveBtn) saveBtn.disabled = true;
+        if (demolishBtn) demolishBtn.disabled = true;
+        if (routeBtn) routeBtn.disabled = true;
+
+        // Deshabilitar construcción y ocultar ítems
+        document.querySelector("#building-accordion .accordion-button")?.setAttribute("disabled", "");
+        document.getElementById("collapseBuildings")?.classList.remove("show");
     }
 
     // ─── 13. Toast ───────────────────────────────────────────────────────────

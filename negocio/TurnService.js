@@ -80,13 +80,11 @@ class TurnService { // Servicio que ejecuta el avance de la partida por turnos
     _checkGameOver(city) { // Reglas simples para terminar el juego
         const r = city.getResources() // Atajo a recursos de la ciudad
         if (r.getElectricity() < 0) { // Si electricidad está en negativo
-            this._turnsNegElectricity++ // Suma 1 turno negativo seguido
-            if (this._turnsNegElectricity >= 2) return "¡Sin electricidad por 2 turnos! La ciudad colapsó." // Game over
+            return "¡Sin electricidad! La ciudad colapsó." // Game over inmediato
         } else { this._turnsNegElectricity = 0 } // Si vuelve a normal, resetea contador
  
         if (r.getWater() < 0) { // Si agua está en negativo
-            this._turnsNegWater++ // Suma 1 turno negativo seguido
-            if (this._turnsNegWater >= 2) return "¡Sin agua por 2 turnos! La ciudad colapsó." // Game over
+            return "¡Sin agua! La ciudad colapsó." // Game over inmediato
         } else { this._turnsNegWater = 0 } // Si vuelve a normal, resetea contador
  
         return null // Si no hay game over, devuelve null

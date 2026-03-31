@@ -27,6 +27,11 @@ class Raking{
             try {
                 const parsedData = JSON.parse(rankingData);
                 this._data = parsedData.ranking || [];
+
+                // Limpia scores negativos que ya existan en localStorage
+                const before = this._data.length;
+                this._data = this._data.filter(item => (item?.score ?? 0) >= 0);
+                if (this._data.length !== before) this.save();
             } catch (e) {
                 console.error("Error al parsear el ranking:", e);
                 this._data = [];
@@ -38,6 +43,9 @@ class Raking{
     }
 
     add(gameData) {
+        if (!gameData) return;
+        if (gameData.score < 0) return; // si es negativo no se guarda
+
         this._data.push(gameData);
         this._data.sort((a, b) => (b?.score ?? 0) - (a?.score ?? 0));
         this.save();
