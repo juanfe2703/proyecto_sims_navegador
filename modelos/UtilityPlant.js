@@ -13,7 +13,6 @@ class UtilityPlant extends Building{
     setProductionType(productionType) { this._productionType = productionType; }
     setProductionAmount(productionAmount) { this._productionAmount = productionAmount; }
 
-
     //generate water or electricity depend of type 
     //productionType: "electricity" (planta eléctrica) o "water" (planta de agua)
     produce() {

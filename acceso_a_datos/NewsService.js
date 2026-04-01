@@ -12,11 +12,11 @@ class ApiNews {
                 return response.json();
             })
             .then(data => {
-                return data.articles;
-            })
-            .catch(error => {
-                console.error("Error al obtener noticias:", error);
-                return null;
+                const articles = data?.articles;
+                if (!Array.isArray(articles) || articles.length === 0) {
+                    throw new Error("Ciudad no valida");
+                }
+                return articles;
             });
 }
 }

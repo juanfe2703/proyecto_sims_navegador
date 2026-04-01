@@ -14,12 +14,14 @@ class ApiClimate{
 
                 // verificar si la API devolvió error
                 if (data.error) {
+                    // WeatherAPI: 1006 = No matching location found
+                    if (data.error.code === 1006) throw new Error("Ciudad no valida");
                     throw new Error(data.error.message);
                 }
 
                 // validar que la ciudad esté en Colombia
                 if (data.location.country !== "Colombia") {
-                    throw new Error("La ciudad ingresada no pertenece a Colombia");
+                    throw new Error("Ciudad no valida");
                 }
 
                 // retornar solo los datos que necesitas
@@ -30,10 +32,6 @@ class ApiClimate{
                     humidity: data.current.humidity,
                     icon: data.current.condition.icon
                 };
-            })
-            .catch(error => {
-                console.error(error);
-                return null;
             });
 }
 }

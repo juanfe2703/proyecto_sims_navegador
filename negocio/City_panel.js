@@ -5,6 +5,31 @@
  * - Crea la City y la persiste (loadCity) antes de redirigir a game.html.
  */
 document.addEventListener("DOMContentLoaded",function(){
+    // Si hay partida guardada, ofrecer cargar o crear una nueva
+    try {
+        const modal = document.getElementById("Load_new_modal");
+        const savedCity = (typeof loadCityFromStorage === "function") ? loadCityFromStorage() : null;
+        if (modal && savedCity) {
+            modal.hidden = false;
+
+            const btnLoad = document.getElementById("btn-load-game");
+            const btnNew  = document.getElementById("btn-new-game");
+
+            if (btnLoad) {
+                btnLoad.addEventListener("click", function(){
+                    window.location.href = "game.html";
+                });
+            }
+
+            if (btnNew) {
+                btnNew.addEventListener("click", function(){
+                    try { if (typeof deleteSavedCity === "function") deleteSavedCity(); } catch {}
+                    modal.hidden = true;
+                });
+            }
+        }
+    } catch {}
+
     let btnCreateCity = document.getElementById("btn-create-city");
     btnCreateCity.addEventListener("click", async function(){
         let Imput_name    = document.getElementById("city-name");
@@ -19,12 +44,17 @@ document.addEventListener("DOMContentLoaded",function(){
                 let mapSize = createMape(Imput_mapSize);
                 let myCity  = await createCity(Imput_name, Imput_mayor, Imput_location, mapSize);
                 if(myCity){
-                    if (typeof window.loadCity === "function") {
-                        window.loadCity(myCity);
-                    } else {
-                        console.warn("No se encontró window.loadCity().");
+                    let savedOk = false;
+                    try {
+                        if (typeof loadCity === "function") { loadCity(myCity); savedOk = true; }
+                        else if (typeof saveCity === "function") { saveCity(myCity); savedOk = true; }
+                        else console.warn("No se encontró loadCity() ni saveCity().");
+                    } catch (e) {
+                        console.warn("No se pudo guardar la ciudad:", e);
                     }
-                    window.location.href = "game.html";
+
+                    if (savedOk) window.location.href = "game.html";
+                    else alert("No se pudo guardar la ciudad. Revisa StorageService.js");
                 }
             }
         } else {
@@ -57,13 +87,15 @@ document.addEventListener("DOMContentLoaded",function(){
             myCity.setTurn(0);
             myCity.setScore(new Score());
 
-            // Clima (opcional - puede fallar sin bloquear)
-            try { await myCity.ensureClimate(); }
-            catch(e) { console.warn("Clima no disponible:", e.message); }
+            // Clima (obligatorio): valida que la ubicación pertenezca a Colombia
+            await myCity.ensureClimate();
 
             // Noticias (opcional - puede fallar sin bloquear)
             try { await myCity.ensureNews(); }
-            catch(e) { console.warn("Noticias no disponibles:", e.message); }
+            catch(e) {
+                if (e && e.message === "Ciudad no valida") throw e;
+                console.warn("Noticias no disponibles:", e.message);
+            }
 
             alert("Ciudad creada exitosamente");
             return myCity;

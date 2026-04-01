@@ -6,6 +6,24 @@ body{
     margin: 0;
 }
 
+#Load_new_modal[hidden] {
+    display: none !important;
+}
+
+.gameover-overlay {
+    z-index: 2000;
+}
+
+.gameover-backdrop {
+    z-index: 0;
+}
+
+.gameover-card {
+    position: relative;
+    z-index: 1;
+    max-width: 420px;
+}
+
 #City_content{
     width: 600px;
 }
