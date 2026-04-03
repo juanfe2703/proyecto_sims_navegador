@@ -36,21 +36,27 @@ class IndustrialBuilding extends Building{
 
     //generate money or food depend the building type 
     //productionType: "money" (fábrica) o "food" (granja)
-    produce() {
-        if (this._productionType === "food") {
-            // Granja: produce food and consume water 
-            return new ResourceTransaction({
-                food: this._producionAmount,
-                water: -this._waterConsumption,
-                electricity: -this._electricityConsumption
-            });
-        } else {
-            // Fábrica: produce money, consume water and electrucity
-            return new ResourceTransaction({
-                money: this._producionAmount,
-                electricity: -this._electricityConsumption,
-                water: -this._waterConsumption
-            });
-        }
+    //corregido el metodo produce porque no reducia la produccion al 50% cuando faltaban recursos, siempre producia al 100%
+    produce(city) {
+    let factor = 1;
+    if (city) {
+        const r = city.getResources();
+        const needsWater = this._waterConsumption > 0 && r.getWater() <= 0;
+        const needsElec  = this._electricityConsumption > 0 && r.getElectricity() <= 0;
+        if (needsWater || needsElec) factor = 0.5;
     }
+    if (this._productionType === "food") {
+        return new ResourceTransaction({
+            food:  Math.floor(this._producionAmount * factor),
+            water: -this._waterConsumption,
+            electricity: -this._electricityConsumption
+        });
+    } else {
+        return new ResourceTransaction({
+            money: Math.floor(this._producionAmount * factor),
+            electricity: -this._electricityConsumption,
+            water: -this._waterConsumption
+        });
+    }
+}
 }
