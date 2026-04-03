@@ -69,10 +69,8 @@
                    placeholder="Ej: Manizales, Medellín, Bogotá...">
 
             <label for="map-size">Tamaño del mapa</label>
-            <select id="map-size" class="form-select form-select-lg mb-3">
-                <option value="" selected>Seleccione un tamaño...</option>
-                <option value="1">15 x 15</option>
-                <option value="2">30 x 30</option>
+                <label for="map-size">Tamaño del mapa (15-30):</label>
+                <input id="map-size" type="number" class="form-control" value="20" min="15" max="30">
             </select>
 
             <button id="btn-create-city" class="btn btn-success btn-lg mt-3" type="button">

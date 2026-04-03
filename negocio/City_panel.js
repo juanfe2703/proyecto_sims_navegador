@@ -64,8 +64,9 @@ document.addEventListener("DOMContentLoaded",function(){
         let Imput_mapSize = document.getElementById("map-size");
 
         if (Imput_name.value != "" && Imput_mayor.value != "" && Imput_location.value != "") {
-            if(Imput_mapSize.value == "3" || Imput_mapSize.value == ""){
-                alert("Seleccione un tamaño de mapa valido");
+            //actualizacion para que no reciba un numero estatico
+            if (Imput_mapSize.value == "" || isNaN(parseInt(Imput_mapSize.value))) {
+                alert("Seleccione un tamaño de mapa válido (15-30)");
             } else {
                 let mapSize = createMape(Imput_mapSize);
                 let myCity  = await createCity(Imput_name, Imput_mayor, Imput_location, mapSize);
@@ -91,17 +92,16 @@ document.addEventListener("DOMContentLoaded",function(){
         }
     });
 
-    function createMape(Option) {
+    //actualizacion para que el mapa pueda ser de 15 a 30 y no de solo 15 o 30
+    function createMape(input) {
+        const size = Math.max(15, Math.min(30, parseInt(input.value) || 20));
+
         let myGrid = new Grid();
-        if(Option.value == "1"){
-            myGrid.setWidth(15);
-            myGrid.setHeight(15);
-        } else {
-            myGrid.setWidth(30);
-            myGrid.setHeight(30);
-        }
+        myGrid.setWidth(size);
+        myGrid.setHeight(size);
+
         return myGrid;
-    }
+    }   
 
     async function createCity(name_city, name_player, location, mapSize) {
         let myCity = new City();
