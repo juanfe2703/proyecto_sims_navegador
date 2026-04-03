@@ -578,6 +578,36 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
     // ─── 15. Arranque ────────────────────────────────────────────────────────
     renderMap(); // Dibuja el mapa
     updateInfoPanels(); // Dibuja paneles
+    // ─── Configuración dinámica de recursos ───────────────────
+
+    document.getElementById("init-electricity")?.addEventListener("change", function() {
+        myCity.getResources().setElectricity(parseInt(this.value) || 0);
+        updateInfoPanels();
+        saveCity(myCity);
+    });
+
+    document.getElementById("init-water")?.addEventListener("change", function() {
+        myCity.getResources().setWater(parseInt(this.value) || 0);
+        updateInfoPanels();
+        saveCity(myCity);
+    });
+
+    document.getElementById("init-food")?.addEventListener("change", function() {
+        myCity.getResources().setFood(parseInt(this.value) || 0);
+        updateInfoPanels();
+        saveCity(myCity);
+    });
+
+    document.getElementById("service-bonus")?.addEventListener("change", function() {
+        const val = parseInt(this.value) || 10;
+
+        myCity.getBuildings().forEach(b => {
+            if (b instanceof ServiceBuilding) b.setHappinessBoost(val);
+        });
+
+        updateInfoPanels();
+        saveCity(myCity);
+    });
 
     if (myCity.getClimate()) weatherPrint(myCity.getClimate()); // Si hay clima, lo muestra
     if (myCity.getNews())    newsPrint(myCity.getNews()); // Si hay noticias, las muestra
