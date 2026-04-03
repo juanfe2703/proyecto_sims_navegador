@@ -214,6 +214,10 @@ function loadCityFromStorage() {
         (data._citizens || []).forEach(cd => {
             const c = new Citizen(cd._id);
             c._happiness = cd._happiness || 50;
+            // No restaurar hasHouse/hasJob — se reasignan en el primer turno
+            //
+            c._hasHouse = false;
+            c._hasJob = false;
             city.addCitizen(c);
         });
  
