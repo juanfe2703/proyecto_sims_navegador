@@ -49,11 +49,26 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
     const turnSpeedInput = document.getElementById("turn-speed");
     const growthInput    = document.getElementById("growth-rate");
 
-    // Si ya hubo Game Over y navegaste a otra página, al volver lo restaura
+    // Si ya hubo Game Over, al volver lo restaura.
+    // Nota: sessionStorage se pierde al cerrar la pestaña; localStorage persiste.
     try {
-        if (sessionStorage.getItem("gameOverActive") === "1") {
-            const reason = sessionStorage.getItem("gameOverReason") || "Game Over";
+        const active = sessionStorage.getItem("gameOverActive") === "1"
+            || localStorage.getItem("gameOverActive") === "1";
+        if (active) {
+            const reason = sessionStorage.getItem("gameOverReason")
+                || localStorage.getItem("gameOverReason")
+                || "Game Over";
             onGameOver(reason);
+        }
+    } catch {}
+
+    // Si el storage no está disponible o se limpió, aun así aplica Game Over
+    // si el estado guardado ya está en condición de colapso.
+    try {
+        const r = myCity.getResources?.();
+        if (r) {
+            if (r.getElectricity?.() < 0) onGameOver("¡Sin electricidad! La ciudad colapsó.");
+            else if (r.getWater?.() < 0) onGameOver("¡Sin agua! La ciudad colapsó.");
         }
     } catch {}
 
@@ -344,6 +359,12 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         try {
             sessionStorage.setItem("gameOverActive", "1");
             sessionStorage.setItem("gameOverReason", msg ?? "Game Over");
+        } catch {}
+
+        // Persistir también para cuando se cierre completamente y se vuelva a abrir.
+        try {
+            localStorage.setItem("gameOverActive", "1");
+            localStorage.setItem("gameOverReason", msg ?? "Game Over");
         } catch {}
 
         if (pauseBtn) pauseBtn.textContent="▶ Iniciar"; // Deja el botón listo para iniciar

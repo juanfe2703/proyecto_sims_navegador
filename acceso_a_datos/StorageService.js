@@ -167,9 +167,15 @@ function loadCityFromStorage() {
  
         // Recursos
         const r = data._resources;
-        city.setResources(r
-            ? new Resources(r._money||50000, r._electricity||0, r._water||0, r._food||0)
-            : new Resources(50000, 0, 0, 0));
+        if (r) {
+            const money = (r._money ?? r.money ?? 50000);
+            const electricity = (r._electricity ?? r.electricity ?? 0);
+            const water = (r._water ?? r.water ?? 0);
+            const food = (r._food ?? r.food ?? 0);
+            city.setResources(new Resources(money, electricity, water, food));
+        } else {
+            city.setResources(new Resources(50000, 0, 0, 0));
+        }
  
         // Ciudadanos (las referencias a edificios se reasignan en el primer processCitizens)
         (data._citizens || []).forEach(cd => {
