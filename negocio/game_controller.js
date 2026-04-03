@@ -188,6 +188,19 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
 
     // ─── 7. Paneles info ─────────────────────────────────────────────────────
 
+    function getResourceBreakdown() {
+        let elecProd = 0, elecCons = 0, waterProd = 0, waterCons = 0;
+        myCity.getBuildings().forEach(b => {
+            if (b instanceof UtilityPlant) {
+                if (b.getProductionType() === "electricity") elecProd += b.getProductionAmount();
+                if (b.getProductionType() === "water") waterProd += b.getProductionAmount();
+            }
+            elecCons += b.getElectricityConsumption();
+            waterCons += b.getWaterConsumption();
+        });
+        return { elecProd, elecCons, waterProd, waterCons };
+    }
+
     function updateInfoPanels() { // Refresca panel de ciudad/recursos/score/turno
         if (cityInfoEl) cityInfoEl.innerHTML = `
             <p class="d-flex align-items-center justify-content-between mb-1">
@@ -198,12 +211,25 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
             <p class="mb-0">Region: ${myCity.getLocation()}</p>`;
 
         const r = myCity.getResources(); // Atajo a recursos
+        const { elecProd, elecCons, waterProd, waterCons } = getResourceBreakdown();
         if (resourcesEl) { // Si existe el panel de recursos en el DOM
             const mc = r.getMoney()>10000?"text-success":r.getMoney()<1000?"text-danger":"text-warning"; // Color del dinero
             resourcesEl.innerHTML = `
                 <div class="resource-row"><span>💰 Dinero</span><span class="${mc}">$${r.getMoney().toLocaleString()}</span></div>
-                <div class="resource-row"><span>⚡ Electricidad</span><span class="${r.getElectricity()<0?"text-danger":"text-light"}">${r.getElectricity()}</span></div>
-                <div class="resource-row"><span>💧 Agua</span><span class="${r.getWater()<0?"text-danger":"text-light"}">${r.getWater()}</span></div>
+                <div class="resource-row"><span>⚡ Electricidad</span>
+                    <span 
+                        class="${r.getElectricity()<0?"text-danger":"text-light"}"
+                        title="Producción: ${elecProd} | Consumo: ${elecCons}">
+                        ${elecProd} / ${elecCons}
+                    </span>
+                </div>
+                <div class="resource-row"><span>💧 Agua</span>
+                    <span 
+                        class="${r.getWater()<0?"text-danger":"text-light"}"
+                        title="Producción: ${waterProd} | Consumo: ${waterCons}">
+                        ${waterProd} / ${waterCons}
+                    </span>
+                </div>
                 <div class="resource-row"><span>🌽 Alimentos</span><span class="text-light">${r.getFood()}</span></div>
                 <div class="resource-row"><span>👥 Poblacion</span><span class="text-light">${myCity.getCitizens().length}</span></div>
                 <div class="resource-row"><span>😊 Felicidad</span><span class="text-light">${getAvgHappiness()}%</span></div>`;
