@@ -100,14 +100,39 @@
 
 .gameover-overlay {
     z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.3s ease;
 }
 
 .gameover-backdrop {
     z-index: 0;
+    /* Bootstrap usa .opacity-75 con !important; lo sobreescribimos solo aquí para animar */
+    opacity: 0 !important;
+    transition: all 0.3s ease;
 }
 
 .gameover-card {
     position: relative;
     z-index: 1;
-    max-width: 420px;
+    width: 100%;
+    max-width: 50%;
+    transform: scale(0.9);
+    transform-origin: center;
+    transition: all 0.3s ease;
+}
+
+.gameover-overlay.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.gameover-overlay.show .gameover-backdrop {
+    opacity: 0.75 !important;
+}
+
+.gameover-overlay.show .gameover-card {
+    transform: scale(1);
 }

@@ -6,6 +6,21 @@
 
 document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el HTML ya cargó
 
+    function openOverlayModal(modalEl) {
+        if (!modalEl) return;
+        modalEl.classList.remove("show");
+        modalEl.hidden = false;
+        requestAnimationFrame(() => modalEl.classList.add("show"));
+    }
+
+    function closeOverlayModal(modalEl, transitionMs = 300) {
+        if (!modalEl) return;
+        modalEl.classList.remove("show");
+        window.setTimeout(() => {
+            modalEl.hidden = true;
+        }, transitionMs);
+    }
+
     // ─── 1. Cargar ciudad ────────────────────────────────────────────────────
     const myCity = loadCityFromStorage(); // Intenta cargar la ciudad desde localStorage
 
@@ -369,6 +384,96 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         showToast("Partida guardada.","success");
     });
 
+    // ─── 10.1 Atajos de teclado ────────────────────────────────────────────
+
+    const buildingsCollapseEl = document.getElementById("collapseBuildings");
+    const gameOverOverlayEl = document.getElementById("Game_over_modal");
+
+    function isTypingInInput(target) {
+        if (!target) return false;
+        const tag = (target.tagName || "").toLowerCase();
+        return tag === "input" || tag === "textarea" || tag === "select" || target.isContentEditable;
+    }
+
+    function isGameOverOverlayActive() {
+        return !!(gameOverOverlayEl && !gameOverOverlayEl.hidden);
+    }
+
+    function toggleBuildingsMenu() {
+        if (!buildingsCollapseEl) return;
+        const isOpen = buildingsCollapseEl.classList.contains("show");
+        // Preferir API de Bootstrap si está disponible
+        try {
+            const bs = window.bootstrap;
+            if (bs?.Collapse?.getOrCreateInstance) {
+                const inst = bs.Collapse.getOrCreateInstance(buildingsCollapseEl, { toggle: false });
+                if (isOpen) inst.hide();
+                else inst.show();
+                return;
+            }
+        } catch {}
+        buildingsCollapseEl.classList.toggle("show", !isOpen);
+    }
+
+    document.addEventListener("keydown", function (e) {
+        if (!e) return;
+        if (e.repeat) return;
+        if (isGameOverOverlayActive()) return;
+        if (isTypingInInput(e.target)) return;
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        const key = (e.key || "").toLowerCase();
+
+        // ESC: cancelar modo actual
+        if (e.key === "Escape") {
+            setMode("none");
+            return;
+        }
+
+        // Space: pausar/reanudar (evita scroll)
+        if (e.code === "Space" || e.key === " ") {
+            e.preventDefault();
+            pauseBtn?.click();
+            return;
+        }
+
+        // B: abrir menú de construcción
+        if (key === "b") {
+            toggleBuildingsMenu();
+            return;
+        }
+
+        // R: modo construcción de vías (selecciona el item road)
+        if (key === "r") {
+            if (!buildingsCollapseEl?.classList.contains("show")) toggleBuildingsMenu();
+            const roadItem = document.querySelector('.building-item[data-type="road"]');
+            if (roadItem) roadItem.click();
+            else {
+                selectedType = "road";
+                setMode("build");
+            }
+            return;
+        }
+
+        // D: modo demolición
+        if (key === "d") {
+            demolishBtn?.click();
+            return;
+        }
+
+        // S: guardar partida
+        if (key === "s") {
+            try {
+                saveCity(myCity);
+                showToast("Partida guardada.", "success");
+            } catch (e) {
+                console.warn("No se pudo guardar la partida:", e);
+                showToast("No se pudo guardar la partida.", "danger");
+            }
+            return;
+        }
+    });
+
     // ─── 11. Modo ────────────────────────────────────────────────────────────
 
     function setMode(mode) {
@@ -409,7 +514,7 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         else goEl.textContent = msg;
 
         // Mostrar overlay
-        goEl.hidden = false;
+        openOverlayModal(goEl);
 
         // Bloquear interacción (no modificar nada)
         try { if (typeof turnService?.stopTimer === "function") turnService.stopTimer(); } catch {}

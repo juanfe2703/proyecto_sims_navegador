@@ -5,6 +5,24 @@
  * - Crea la City y la persiste (loadCity) antes de redirigir a game.html.
  */
 document.addEventListener("DOMContentLoaded",function(){
+    const MODAL_TRANSITION_MS = 300;
+
+    function openOverlayModal(modalEl) {
+        if (!modalEl) return;
+        modalEl.classList.remove("show");
+        modalEl.hidden = false;
+        // Forzar un frame para que la transición ocurra (opacity 0 -> 1, scale 0.9 -> 1)
+        requestAnimationFrame(() => modalEl.classList.add("show"));
+    }
+
+    function closeOverlayModal(modalEl) {
+        if (!modalEl) return;
+        modalEl.classList.remove("show");
+        window.setTimeout(() => {
+            modalEl.hidden = true;
+        }, MODAL_TRANSITION_MS);
+    }
+
     function clearGameOverSession() {
         try { sessionStorage.removeItem("gameOverActive"); } catch {}
         try { sessionStorage.removeItem("gameOverReason"); } catch {}
@@ -17,7 +35,7 @@ document.addEventListener("DOMContentLoaded",function(){
         const modal = document.getElementById("Load_new_modal");
         const savedCity = (typeof loadCityFromStorage === "function") ? loadCityFromStorage() : null;
         if (modal && savedCity) {
-            modal.hidden = false;
+            openOverlayModal(modal);
 
             const btnLoad = document.getElementById("btn-load-game");
             const btnNew  = document.getElementById("btn-new-game");
@@ -32,7 +50,7 @@ document.addEventListener("DOMContentLoaded",function(){
                 btnNew.addEventListener("click", function(){
                     try { if (typeof deleteSavedCity === "function") deleteSavedCity(); } catch {}
                     clearGameOverSession();
-                    modal.hidden = true;
+                    closeOverlayModal(modal);
                 });
             }
         }
