@@ -33,12 +33,16 @@ class CommercialBuilding extends Building {
 
     //this method generate increases if there's electricity
     //if electricityConsumption > 0 but there's no electricity, it not work 
-    produce() {
-        return new ResourceTransaction({
-            money: this._incomePerTurn,
-            electricity: -this._electricityConsumption,
-            water: -this._waterConsumption
-        });
+    produce(city) {
+    // Si consume electricidad y la ciudad no tiene, no genera nada
+    if (this._electricityConsumption > 0 && city && city.getResources().getElectricity() <= 0) {
+        return new ResourceTransaction({ electricity: -this._electricityConsumption });
     }
+    return new ResourceTransaction({
+        money: this._incomePerTurn,
+        electricity: -this._electricityConsumption,
+        water: -this._waterConsumption
+    });
+}
  
 }

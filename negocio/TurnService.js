@@ -15,7 +15,8 @@ class TurnService { // Servicio que ejecuta el avance de la partida por turnos
             // 1. Produccion y consumo
             city.getBuildings().forEach(building => { // Recorre cada edificio de la ciudad
                 if (typeof building.produce === "function") { // Solo si el edificio implementa produce()
-                    const tx = building.produce() // Crea una transacción de recursos (money/electricity/water/food)
+                    //he corregido esto para que ahora los edificios no produzcan dinero si no hay electricidad
+                    const tx = building.produce(city);// Crea una transacción de recursos (money/electricity/water/food)
                     city.getResources().applyTransaction(tx) // Aplica la transacción a los recursos de la ciudad
                 }
             })
