@@ -49,6 +49,20 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
     const turnSpeedInput = document.getElementById("turn-speed");
     const growthInput    = document.getElementById("growth-rate");
 
+    // ─── Música de fondo ───────────────────────────────────────────────────
+    const bgmEl = document.getElementById("bgm");
+    function startBgm() {
+        if (!bgmEl) return;
+        // Volumen suave por defecto
+        try { bgmEl.volume = 0.25; } catch {}
+        try {
+            const p = bgmEl.play();
+            if (p && typeof p.catch === "function") p.catch(()=>{});
+        } catch {}
+    }
+    // Intentar arrancar con el primer gesto del usuario (autoplay suele bloquearse)
+    try { document.addEventListener("pointerdown", startBgm, { once: true }); } catch {}
+
     // Si ya hubo Game Over, al volver lo restaura.
     // Nota: sessionStorage se pierde al cerrar la pestaña; localStorage persiste.
     try {
@@ -307,6 +321,7 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
     });
 
     if (pauseBtn) pauseBtn.addEventListener("click",function(){
+        startBgm();
         const speed = parseInt(turnSpeedInput?.value)||10; // Velocidad de turnos (segundos)
         const rate  = parseInt(growthInput?.value)||3; // Tasa de crecimiento de ciudadanos
         if (turnService.isRunning()) { // Si ya está corriendo
@@ -336,7 +351,22 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         }
 
         // 2) Guardar partida (ciudad) en localStorage
-        saveCity(myCity); showToast("Partida guardada.","success"); // Guarda manualmente y avisa
+        saveCity(myCity); // Guarda manualmente
+
+        // 3) Exportar a archivo JSON
+        try {
+            if (typeof exportCityToJsonFile === "function") {
+                exportCityToJsonFile(myCity);
+                showToast("Partida exportada a JSON.","success");
+            } else {
+                showToast("Export JSON no disponible.","warning");
+            }
+        } catch (e) {
+            console.warn("No se pudo exportar JSON:", e);
+            showToast("No se pudo exportar el JSON.","danger");
+        }
+
+        showToast("Partida guardada.","success");
     });
 
     // ─── 11. Modo ────────────────────────────────────────────────────────────
@@ -419,7 +449,26 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
     }
 
     // ─── 14. Guardado automatico cada 30s ────────────────────────────────────
-    setInterval(()=>saveCity(myCity),30000); // Autoguardado cada 30 segundos
+    setInterval(function(){
+        // 1) Guardar partida
+        try { saveCity(myCity); } catch (e) {}
+
+        // 2) Guardar ranking (misma estructura que el saveBtn)
+        try {
+            if (typeof Raking === "function") {
+                const r = new Raking();
+                r.loadRanking();
+                r.add({
+                    cityName: myCity.getNameCity(),
+                    playerName: myCity.getNamePlayer(),
+                    score: myCity.getScore()?.getTotal() ?? 0,
+                    date: new Date().toLocaleString()
+                });
+            }
+        } catch (e) {
+            console.warn("No se pudo autoguardar en ranking:", e);
+        }
+    },30000); // Autoguardado cada 30 segundos
 
     // ─── 15. Arranque ────────────────────────────────────────────────────────
     renderMap(); // Dibuja el mapa

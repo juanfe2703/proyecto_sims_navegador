@@ -190,7 +190,11 @@ body {
     margin-bottom: 20px; /* separación entre noticias */
 }
 
-#zoom-in{
+#zoom-in,
+#pan-up,
+#pan-down,
+#pan-left,
+#pan-right{
     background: #C8E6C9; /* fondo botón */
     border: 2px solid #81C784; /* borde botón */
 }
@@ -204,7 +208,8 @@ body {
     gap: 10px; /* espacio entre controles */
 }
 
-#zoom-in:hover, #zoom-out:hover {
+#zoom-in:hover, #zoom-out:hover,
+#pan-up:hover, #pan-down:hover, #pan-left:hover, #pan-right:hover {
     background: #2E7D32; /* color al pasar */
     cursor: pointer; /* indicar clic */
 }

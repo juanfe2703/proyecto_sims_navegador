@@ -5,6 +5,39 @@ function saveCity(city) {
     localStorage.setItem("city", JSON.stringify(data));
     console.log(city + "[saveCity] Ciudad guardada:", data);
 }
+
+// ─── Export (descarga archivo JSON) ─────────────────────────────────────────
+
+function _safeFileName(name) {
+    if (!name) return "ciudad";
+    // Quitar caracteres inválidos en Windows y simplificar espacios.
+    return String(name)
+        .replace(/[\\/:*?"<>|]/g, "")
+        .trim()
+        .replace(/\s+/g, "_");
+}
+
+function exportCityToJsonFile(city, fileName) {
+    const data = serializeCity(city);
+    const json = JSON.stringify(data, null, 2);
+
+    const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+
+    const cityName = (city && typeof city.getNameCity === "function") ? city.getNameCity() : "ciudad";
+    const baseName = fileName ? fileName : (_safeFileName(cityName) + "_save.json");
+    a.download = baseName;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    // Liberar el blob (en el siguiente tick por seguridad)
+    setTimeout(function () { URL.revokeObjectURL(url); }, 0);
+}
  
 function loadCity(city) { saveCity(city); }
  
