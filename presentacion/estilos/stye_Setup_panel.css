@@ -52,3 +52,7 @@ body{
 #City_content{
     width: 600px;
 }
+
+.hidden-input {
+    display: none;
+}

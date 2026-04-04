@@ -56,6 +56,86 @@ document.addEventListener("DOMContentLoaded",function(){
         }
     } catch {}
 
+    document.getElementById("btn-load-map").addEventListener("click", () => {
+        document.getElementById("file-map-input").click();
+    });
+
+    document.getElementById("file-map-input").addEventListener("change", function() {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const lines = e.target.result.trim().split("\n");
+                const height = lines.length;
+                const width  = lines[0].trim().split(/\s+/).length;
+
+                if (width < 15 || width > 30 || height < 15 || height > 30) {
+                    alert("El mapa debe tener entre 15x15 y 30x30 celdas.");
+                    return;
+                }
+
+                const grid = new Grid();
+                grid.setWidth(width);
+                grid.setHeight(height);
+
+                const typeMap = {
+                    "R1":"house","R2":"apartment",
+                    "C1":"shop","C2":"mall",
+                    "I1":"factory","I2":"farm",
+                    "S1":"police","S2":"fire","S3":"hospital",
+                    "U1":"electric_plant","U2":"water_plant",
+                    "P1":"park"
+                };
+
+                const bs = new BuildingService();
+                const tempCity = new City();
+                tempCity.setGrid(grid);
+                tempCity.setResources(new Resources(50000, 0, 0, 0));
+                tempCity.setScore(new Score());
+
+                lines.forEach((line, y) => {
+                    line.trim().split(/\s+/).forEach((token, x) => {
+                        const cell = new Cell(x, y, "empty");
+                        grid.Add_position(cell);
+                        if (token === "r") {
+                            cell.setRoad(new Road(100));
+                            cell.setType("road");
+                            tempCity.getResources().setMoney(
+                                tempCity.getResources().getMoney() - 100
+                            );
+                        } else if (typeMap[token]) {
+                            // Se omite la validación de vía adyacente al cargar mapa
+                            const id = tempCity.getBuildings().length + 1;
+                            const building = bs._createBuilding(id, typeMap[token]);
+                            if (building) {
+                                cell.setBuilding(building);
+                                cell.setType(typeMap[token]);
+                                tempCity.getResources().setMoney(
+                                    tempCity.getResources().getMoney() - building.getCost()
+                                );
+                                tempCity.addBuilding(building);
+                            }
+                        }
+                    });
+                });
+
+                // Guardar el grid cargado en sessionStorage para recuperarlo
+                // en createCity() después de llenar el formulario
+                sessionStorage.setItem("preloadedGrid", JSON.stringify({
+                    width, height,
+                    // solo guardamos el tipo de celda para reconstruir
+                    cells: grid.getCell().map(c => ({ x: c.getX(), y: c.getY(), type: c.getType() }))
+                }));
+                alert(`Mapa cargado: ${width}x${height}. Ahora completa los datos y crea la ciudad.`);
+                document.getElementById("map-size").value = width; // actualizar el input
+            } catch(err) {
+                alert("Error al leer el archivo: " + err.message);
+            }
+        };
+        reader.readAsText(file);
+    });
+
     let btnCreateCity = document.getElementById("btn-create-city");
     btnCreateCity.addEventListener("click", async function(){
         let Imput_name    = document.getElementById("city-name");
