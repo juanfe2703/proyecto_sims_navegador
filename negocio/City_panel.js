@@ -5,6 +5,24 @@
  * - Crea la City y la persiste (loadCity) antes de redirigir a game.html.
  */
 document.addEventListener("DOMContentLoaded",function(){
+    // Cargar ciudades desde api-colombia
+    fetch("https://api-colombia.com/api/v1/City")
+        .then(r => r.json())
+        .then(cities => {
+            const select = document.getElementById("location");
+
+            // Limpiar opciones
+            select.innerHTML = '<option value="">Seleccione una ciudad</option>';
+
+            cities.forEach(city => {
+                const opt = document.createElement("option");
+                opt.value = city.name;
+                opt.textContent = city.name;
+                select.appendChild(opt);
+            });
+        })
+        .catch(() => console.warn("No se pudo cargar la lista de ciudades colombianas"));
+
     const MODAL_TRANSITION_MS = 300;
 
     function openOverlayModal(modalEl) {
