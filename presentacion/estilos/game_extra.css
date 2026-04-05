@@ -59,6 +59,21 @@
 .score-panel {
     background: #1f2937;
     border-radius: 8px;
+    border: 2px solid #6D4C41;
+}
+
+
+/* Botón estilo café (mismo borde del acordeón) */
+.btn-outline-coffee {
+    --bs-btn-color: #F3F4F6;
+    --bs-btn-border-color: #6D4C41;
+    --bs-btn-hover-color: #F3F4F6;
+    --bs-btn-hover-bg: #6D4C41;
+    --bs-btn-hover-border-color: #6D4C41;
+    --bs-btn-focus-shadow-rgb: 109, 76, 65;
+    --bs-btn-active-color: #F3F4F6;
+    --bs-btn-active-bg: #6D4C41;
+    --bs-btn-active-border-color: #6D4C41;
 }
 
 /* ── Panel de controles ─────────────────────────────────────────── */
@@ -134,5 +149,336 @@
 }
 
 .gameover-overlay.show .gameover-card {
+    transform: scale(1);
+}
+
+/* ── Ranking overlay ───────────────────────────────────────────── */
+#Ranking_modal[hidden] {
+    display: none !important;
+}
+
+.ranking-overlay {
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.ranking-backdrop {
+    z-index: 0;
+    opacity: 0 !important;
+    transition: all 0.3s ease;
+}
+
+.ranking-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 60%;
+    transform: scale(0.9);
+    transform-origin: center;
+    transition: all 0.3s ease;
+}
+
+.ranking-overlay.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.ranking-overlay.show .ranking-backdrop {
+    opacity: 0.75 !important;
+}
+
+.ranking-overlay.show .ranking-card {
+    transform: scale(1);
+}
+
+/* ── Construcción overlay (mismo estilo que puntaje) ───────────── */
+#Buildings_modal[hidden] {
+    display: none !important;
+}
+
+/* Botón "Construir" (igual al header del acordeón original) */
+.buildings-open-btn {
+    background: #c28a63;
+    color: #F3F4F6;
+    border: 4px solid #6D4C41;
+    border-radius: 8px;
+    cursor: pointer;
+    justify-content: center;
+}
+
+/* En styles.css, .building-img-header tiene margin-left:auto (para el acordeón).
+   Aquí lo anulamos para el botón/modal y mantener centrado/ordenado. */
+.buildings-open-btn .building-img-header,
+.buildings-modal-header .building-img-header {
+    margin-left: 0;
+}
+
+.buildings-open-btn:focus {
+    outline: none;
+}
+
+.buildings-overlay {
+    z-index: 2000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.buildings-backdrop {
+    z-index: 0;
+    opacity: 0 !important;
+    transition: all 0.3s ease;
+}
+
+.buildings-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 55%;
+    background: #ba8057;
+    border: 4px solid #6D4C41;
+    transform: scale(0.9);
+    transform-origin: center;
+    transition: all 0.3s ease;
+}
+
+.buildings-modal-header {
+    background: #c28a63;
+    border-radius: 8px;
+    padding: 6px 10px;
+}
+
+/* Hover en opciones del modal de construcción */
+.buildings-card .building-item:hover {
+    cursor: pointer;
+}
+
+/* ── Responsive móvil (HU-022) ─────────────────────────────────────────── */
+
+@media (max-width: 767.98px) {
+    /* Dejar espacio para el menú inferior */
+    body {
+        padding-bottom: 124px;
+    }
+
+    /* Sidebar full width y sin márgenes laterales */
+    .sidebar-left,
+    .sidebar-right {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
+    /* Ocultar el panel de puntuación (stats se ve por botón flotante) */
+    .score-panel {
+        display: none !important;
+    }
+
+    /* Ocultar el botón de construcción (desktop); en móvil se usan tabs inferiores */
+    #btn-open-buildings {
+        display: none !important;
+    }
+
+    /* Asegurar que el menú inferior SIEMPRE sea visible en móvil */
+    #mobile-build-menu {
+        display: block !important;
+    }
+
+    /* Botones con target táctil mínimo */
+    .controls-panel .btn,
+    .zoom-controls .btn {
+        min-height: 44px;
+    }
+}
+
+/* ── Botón flotante (stats) ───────────────────────────────────────────── */
+.stats-fab {
+    position: fixed;
+    right: 12px;
+    bottom: 140px; /* arriba del menú de construcción */
+    z-index: 2100;
+    width: 52px;
+    height: 52px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Overlay stats móvil ─────────────────────────────────────────────── */
+#Mobile_stats_modal[hidden] {
+    display: none !important;
+}
+
+.mobile-stats-overlay {
+    z-index: 2200;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.mobile-stats-backdrop {
+    z-index: 0;
+    opacity: 0 !important;
+    transition: all 0.3s ease;
+}
+
+.mobile-stats-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 90vw;
+    transform: scale(0.95);
+    transform-origin: center;
+    transition: all 0.3s ease;
+}
+
+.mobile-stats-overlay.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.mobile-stats-overlay.show .mobile-stats-backdrop {
+    opacity: 0.75 !important;
+}
+
+.mobile-stats-overlay.show .mobile-stats-card {
+    transform: scale(1);
+}
+
+/* ── Menú inferior: tabs de construcción ─────────────────────────────── */
+.mobile-build-menu {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    background: #ba8057;
+    border-top: 4px solid #6D4C41;
+}
+
+.mobile-build-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    background: #c28a63;
+    border-bottom: 4px solid #6D4C41;
+}
+
+.mobile-build-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.mobile-build-tabs .nav-link {
+    color: #F3F4F6;
+    border: none;
+    white-space: nowrap;
+}
+
+.mobile-build-tabs .nav-link.active {
+    background: #6D4C41;
+    color: #F3F4F6;
+}
+
+.mobile-build-content {
+    background: #ba8057;
+}
+
+.mobile-build-items {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.mobile-build-items::-webkit-scrollbar {
+    display: none;
+}
+
+.mobile-build-item {
+    flex: 0 0 auto;
+    min-width: 72px;
+    min-height: 72px;
+    border: 2px solid #6D4C41;
+    border-radius: 10px;
+    background: #c28a63;
+    color: #F3F4F6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.mobile-build-item .building-img {
+    width: 34px;
+    height: 34px;
+}
+
+/* ── Info edificio overlay (móvil) ───────────────────────────────────── */
+#Building_info_modal[hidden] {
+    display: none !important;
+}
+
+.buildinginfo-overlay {
+    z-index: 2200;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+.buildinginfo-backdrop {
+    z-index: 0;
+    opacity: 0 !important;
+    transition: all 0.3s ease;
+}
+
+.buildinginfo-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 80vw;
+    max-height: 80vh;
+    overflow: auto;
+    transform: scale(0.95);
+    transform-origin: center;
+    transition: all 0.3s ease;
+}
+
+.buildinginfo-overlay.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.buildinginfo-overlay.show .buildinginfo-backdrop {
+    opacity: 0.75 !important;
+}
+
+.buildinginfo-overlay.show .buildinginfo-card {
+    transform: scale(1);
+}
+
+.buildings-overlay.show {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.buildings-overlay.show .buildings-backdrop {
+    opacity: 0.75 !important;
+}
+
+.buildings-overlay.show .buildings-card {
     transform: scale(1);
 }

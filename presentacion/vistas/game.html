@@ -48,6 +48,7 @@
     <!-- Map.js primero (zoom, clima, noticias), luego el controlador -->
     <script defer src="../../negocio/Map.js"></script>
     <script defer src="../../negocio/game_controller.js"></script>
+    <script defer src="../../negocio/raking_controller.js"></script>
  
     <!-- Bootstrap JS -->
     <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
@@ -56,10 +57,10 @@
 <body>
  
 <div id="Container" class="container-fluid p-2">
-    <div class="row g-0">
+    <div class="row g-0 flex-column flex-md-row">
  
         <!-- ══════════════ SIDEBAR IZQUIERDO ══════════════ -->
-        <div class="col-auto sidebar-left px-0 d-flex flex-column gap-2">
+        <div class="col-auto sidebar-left px-0 d-flex flex-column gap-2 order-2 order-md-1">
  
             <!-- Info ciudad -->
             <div id="city-panel" class="p-2">
@@ -69,8 +70,16 @@
  
             <!-- Recursos -->
             <div id="resources-container" class="p-2">
-                <h6 class="text-light mb-1">Recursos</h6>
-                <div id="resources-panel"></div>
+                <!-- En móvil, se muestra como header colapsable (Bootstrap Collapse) -->
+                <button class="btn btn-sm btn-outline-light w-100 d-md-none" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#resources-collapse"
+                        aria-expanded="true" aria-controls="resources-collapse">
+                    Recursos
+                </button>
+                <h6 class="text-light mb-1 d-none d-md-block">Recursos</h6>
+                <div id="resources-collapse" class="collapse show">
+                    <div id="resources-panel"></div>
+                </div>
             </div>
  
             <!-- Puntuacion y turno -->
@@ -81,6 +90,7 @@
                 <div class="d-flex justify-content-between text-light">
                     <small>Puntuacion:</small><small id="score-value">0</small>
                 </div>
+                <div id="score-breakdown" class="small text-secondary mt-1"></div>
             </div>
  
             <!-- Controles del juego -->
@@ -123,20 +133,80 @@
                 <div id="mode-indicator" class="text-warning text-center"></div>
             </div>
  
-            <!-- Menu de edificios (acordeon) -->
-            <div class="accordion" id="building-accordion">
-                <div class="accordion-item">
-                    <h2 class="accordion-header">
-                        <button class="accordion-button py-2" type="button"
-                                data-bs-toggle="collapse" data-bs-target="#collapseBuildings">
-                            <img src="../../recourses/martillos.png" class="building-img-header" alt="">
-                            <span class="ms-2 text-light" style="font-size:13px">Construir</span>
-                        </button>
-                    </h2>
-                    <div id="collapseBuildings" class="accordion-collapse collapse show">
-                        <div class="accordion-body p-1">
-                            <div id="building-list" class="d-flex flex-column gap-1">
+            <!-- Construcción (modal) -->
+            <button id="btn-open-buildings" type="button" class="w-100 d-flex align-items-center gap-2 py-2 buildings-open-btn">
+                <img src="../../recourses/martillos.png" class="building-img-header" alt="">
+            </button>
  
+        </div>
+        <!-- ══ fin sidebar izquierdo ══ -->
+ 
+ 
+        <!-- ══════════════ MAPA CENTRAL ══════════════ -->
+        <div id="map-col" class="col px-0 position-relative order-1 order-md-2">
+
+            <!-- Game over (overlay): se muestra quitando hidden -->
+            <div id="Game_over_modal"
+                 class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center gameover-overlay"
+                 hidden>
+                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-75 gameover-backdrop"></div>
+                <div class="card bg-dark text-light border border-danger gameover-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-danger mb-2">Game Over</h5>
+                        <div data-gameover-reason class="small"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ranking (overlay modal): se muestra quitando hidden -->
+            <div id="Ranking_modal"
+                 class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center ranking-overlay"
+                 hidden>
+                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-75 ranking-backdrop" data-close-ranking-modal></div>
+                <div class="card bg-dark text-light ranking-card" style="border:4px solid #6D4C41;">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div>
+                                <h5 class="mb-0">Puntajes</h5>
+                                <div class="text-light" style="font-size:12px;opacity:.85;">Top 10 guardado en localStorage</div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-light" data-close-ranking-modal>✕</button>
+                        </div>
+
+                        <div class="d-flex gap-2 mb-2">
+                            <button id="btn-ranking-reset" type="button" class="btn btn-sm btn-outline-warning flex-fill">Reiniciar</button>
+                            <button id="btn-ranking-export" type="button" class="btn btn-sm btn-outline-info flex-fill">Exportar JSON</button>
+                        </div>
+
+                        <div class="p-1" style="max-height:60vh;overflow:auto;">
+                            <div id="ranking-empty" class="alert alert-secondary py-2 px-2 mb-0" style="display:none;">
+                                No hay puntajes guardados todavía.
+                            </div>
+                            <div id="ranking-list" class="d-flex flex-column gap-2"></div>
+                            <div id="ranking-you" class="alert alert-dark text-light py-2 px-2 mb-0 mt-2" style="display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Construcción (overlay modal) -->
+            <div id="Buildings_modal"
+                 class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center buildings-overlay"
+                 hidden>
+                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-75 buildings-backdrop" data-close-buildings-modal></div>
+                <div class="card text-light buildings-card">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between mb-2 buildings-modal-header">
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="../../recourses/martillos.png" class="building-img-header" alt="">
+                                <h5 class="mb-0">Construir</h5>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-light" data-close-buildings-modal>✕</button>
+                        </div>
+
+                        <div class="p-1" style="max-height:65vh;overflow:auto;">
+                            <div id="building-list" class="d-flex flex-column gap-1">
+
                                 <!-- Residenciales -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">RESIDENCIAL</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="house">
@@ -147,7 +217,7 @@
                                     <img src="../../recourses/apartamento.png" class="building-img" alt="">
                                     <div><span class="building-name">Apartamento</span><br><small class="text-muted">$3,000 · 12 hab.</small></div>
                                 </div>
- 
+
                                 <!-- Comerciales -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">COMERCIAL</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="shop">
@@ -158,7 +228,7 @@
                                     <img src="../../recourses/centro-comercial.png" class="building-img" alt="">
                                     <div><span class="building-name">Centro Comercial</span><br><small class="text-muted">$8,000 · +$2,000/t</small></div>
                                 </div>
- 
+
                                 <!-- Industriales -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">INDUSTRIAL</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="factory">
@@ -169,7 +239,7 @@
                                     <img src="../../recourses/granja.png" class="building-img" alt="">
                                     <div><span class="building-name">Granja</span><br><small class="text-muted">$3,000 · +50 food/t</small></div>
                                 </div>
- 
+
                                 <!-- Servicios -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">SERVICIOS</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="police">
@@ -184,7 +254,7 @@
                                     <img src="../../recourses/hospital.png" class="building-img" alt="">
                                     <div><span class="building-name">Hospital</span><br><small class="text-muted">$6,000 · +10 fel.</small></div>
                                 </div>
- 
+
                                 <!-- Utilidades -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">UTILIDADES</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="electric_plant">
@@ -195,7 +265,7 @@
                                     <img src="../../recourses/filtro-de-agua.png" class="building-img" alt="">
                                     <div><span class="building-name">Planta de Agua</span><br><small class="text-muted">$8,000 · +150 💧/t</small></div>
                                 </div>
- 
+
                                 <!-- Parque y via -->
                                 <div class="building-category text-light" style="font-size:10px;padding:2px 4px;">OTROS</div>
                                 <div class="building-item d-flex align-items-center gap-2 p-1" data-type="park">
@@ -206,30 +276,20 @@
                                     <img src="../../recourses/camino.png" class="building-img" alt="">
                                     <div><span class="building-name">Via</span><br><small class="text-muted">$100 por celda</small></div>
                                 </div>
- 
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
- 
-        </div>
-        <!-- ══ fin sidebar izquierdo ══ -->
- 
- 
-        <!-- ══════════════ MAPA CENTRAL ══════════════ -->
-        <div id="map-col" class="col px-0 position-relative">
 
-            <!-- Game over (overlay): se muestra quitando hidden -->
-            <div id="Game_over_modal"
-                 class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center gameover-overlay"
+            <!-- Info edificio (overlay móvil, 80% pantalla) -->
+            <div id="Building_info_modal"
+                 class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center buildinginfo-overlay"
                  hidden>
-                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-75 gameover-backdrop"></div>
-                <div class="card bg-dark text-light border border-danger gameover-card">
-                    <div class="card-body">
-                        <h5 class="card-title text-danger mb-2">Game Over</h5>
-                        <div data-gameover-reason class="small"></div>
-                    </div>
+                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-75 buildinginfo-backdrop" data-close-buildinginfo-modal></div>
+                <div class="card bg-dark text-light buildinginfo-card" style="border:4px solid #6D4C41;">
+                    <div class="card-body" id="building-info-modal-content"></div>
                 </div>
             </div>
 
@@ -267,7 +327,7 @@
  
  
         <!-- ══════════════ SIDEBAR DERECHO ══════════════ -->
-        <div class="col-auto sidebar-right px-0 d-flex flex-column gap-2">
+        <div class="col-auto sidebar-right px-0 d-flex flex-column gap-2 order-3 order-md-3">
  
             <!-- Info de edificio seleccionado -->
             <div id="building-info-panel" class="p-2" style="display:none;">
@@ -292,6 +352,129 @@
         </div>
         <!-- ══ fin sidebar derecho ══ -->
  
+    </div>
+</div>
+
+<!-- Botón flotante (móvil): estadísticas -->
+<button id="btn-open-stats" type="button" class="btn btn-outline-coffee d-md-none stats-fab" title="Estadísticas">
+    📊
+</button>
+
+<!-- Modal overlay (móvil): estadísticas -->
+<div id="Mobile_stats_modal"
+     class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center mobile-stats-overlay"
+     hidden>
+    <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-75 mobile-stats-backdrop" data-close-mobile-stats></div>
+    <div class="card bg-dark text-light mobile-stats-card" style="border:4px solid #6D4C41;">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="mb-0">Estadísticas</h5>
+                <button type="button" class="btn btn-sm btn-outline-light" data-close-mobile-stats>✕</button>
+            </div>
+            <div class="d-flex justify-content-between text-light">
+                <small>Turno:</small><small id="m-turn-value">0</small>
+            </div>
+            <div class="d-flex justify-content-between text-light">
+                <small>Puntuacion:</small><small id="m-score-value">0</small>
+            </div>
+            <div id="m-score-breakdown" class="small text-secondary mt-1"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Menú de construcción (móvil): tabs inferiores -->
+<div id="mobile-build-menu" class="d-md-none mobile-build-menu">
+    <ul class="nav nav-tabs mobile-build-tabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-res" data-bs-toggle="tab" data-bs-target="#pane-res" type="button" role="tab">Res</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-com" data-bs-toggle="tab" data-bs-target="#pane-com" type="button" role="tab">Com</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-ind" data-bs-toggle="tab" data-bs-target="#pane-ind" type="button" role="tab">Ind</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-ser" data-bs-toggle="tab" data-bs-target="#pane-ser" type="button" role="tab">Serv</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-otr" data-bs-toggle="tab" data-bs-target="#pane-otr" type="button" role="tab">Otros</button>
+        </li>
+    </ul>
+
+    <div class="tab-content mobile-build-content">
+        <div class="tab-pane fade show active" id="pane-res" role="tabpanel" aria-labelledby="tab-res">
+            <div class="mobile-build-items d-flex gap-2 p-2">
+                <button type="button" class="building-item mobile-build-item" data-type="house">
+                    <img src="../../recourses/casa.png" class="building-img" alt="">
+                    <small class="building-name">Casa</small>
+                </button>
+                <button type="button" class="building-item mobile-build-item" data-type="apartment">
+                    <img src="../../recourses/apartamento.png" class="building-img" alt="">
+                    <small class="building-name">Apto</small>
+                </button>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="pane-com" role="tabpanel" aria-labelledby="tab-com">
+            <div class="mobile-build-items d-flex gap-2 p-2">
+                <button type="button" class="building-item mobile-build-item" data-type="shop">
+                    <img src="../../recourses/tienda.png" class="building-img" alt="">
+                    <small class="building-name">Tienda</small>
+                </button>
+                <button type="button" class="building-item mobile-build-item" data-type="mall">
+                    <img src="../../recourses/centro-comercial.png" class="building-img" alt="">
+                    <small class="building-name">Mall</small>
+                </button>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="pane-ind" role="tabpanel" aria-labelledby="tab-ind">
+            <div class="mobile-build-items d-flex gap-2 p-2">
+                <button type="button" class="building-item mobile-build-item" data-type="factory">
+                    <img src="../../recourses/fabrica-electrica.png" class="building-img" alt="">
+                    <small class="building-name">Fábrica</small>
+                </button>
+                <button type="button" class="building-item mobile-build-item" data-type="farm">
+                    <img src="../../recourses/granja.png" class="building-img" alt="">
+                    <small class="building-name">Granja</small>
+                </button>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="pane-ser" role="tabpanel" aria-labelledby="tab-ser">
+            <div class="mobile-build-items d-flex gap-2 p-2">
+                <button type="button" class="building-item mobile-build-item" data-type="police">
+                    <img src="../../recourses/estacion-de-policia.png" class="building-img" alt="">
+                    <small class="building-name">Policía</small>
+                </button>
+                <button type="button" class="building-item mobile-build-item" data-type="fire">
+                    <img src="../../recourses/bombero.png" class="building-img" alt="">
+                    <small class="building-name">Bomberos</small>
+                </button>
+                <button type="button" class="building-item mobile-build-item" data-type="hospital">
+                    <img src="../../recourses/hospital.png" class="building-img" alt="">
+                    <small class="building-name">Hospital</small>
+                </button>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="pane-otr" role="tabpanel" aria-labelledby="tab-otr">
+            <div class="mobile-build-items d-flex gap-2 p-2">
+                <button type="button" class="building-item mobile-build-item" data-type="electric_plant">
+                    <img src="../../recourses/fabrica-electrica.png" class="building-img" alt="">
+                    <small class="building-name">⚡</small>
+                </button>
+                <button type="button" class="building-item mobile-build-item" data-type="water_plant">
+                    <img src="../../recourses/filtro-de-agua.png" class="building-img" alt="">
+                    <small class="building-name">💧</small>
+                </button>
+                <button type="button" class="building-item mobile-build-item" data-type="park">
+                    <img src="../../recourses/naturaleza.png" class="building-img" alt="">
+                    <small class="building-name">Parque</small>
+                </button>
+                <button type="button" class="building-item mobile-build-item" data-type="road">
+                    <img src="../../recourses/camino.png" class="building-img" alt="">
+                    <small class="building-name">Vía</small>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 

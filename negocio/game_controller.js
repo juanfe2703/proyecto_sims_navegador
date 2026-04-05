@@ -6,6 +6,11 @@
 
 document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el HTML ya cargó
 
+    function isMobileViewport() {
+        try { return window.matchMedia && window.matchMedia("(max-width: 767.98px)").matches; }
+        catch { return window.innerWidth < 768; }
+    }
+
     function openOverlayModal(modalEl) {
         if (!modalEl) return;
         modalEl.classList.remove("show");
@@ -32,6 +37,14 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
 
     if (!myCity.getResources()) myCity.setResources(new Resources(50000, 0, 0, 0)); // Asegura recursos mínimos
     if (!myCity.getScore())     myCity.setScore(new Score()); // Asegura que exista score
+
+    // Clave de ciudad actual para resaltado en ranking (modal/pantalla)
+    try {
+        sessionStorage.setItem(
+            "currentCityKey",
+            String(myCity.getNameCity?.() ?? "") + "|" + String(myCity.getNamePlayer?.() ?? "")
+        );
+    } catch {}
 
     window.gameCity = myCity; // Expone la ciudad en consola (debug)
 
@@ -61,8 +74,40 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
     const routeBtn       = document.getElementById("btn-route");
     const pauseBtn       = document.getElementById("btn-pause");
     const saveBtn        = document.getElementById("btn-save");
+    const openBuildingsBtnEl = document.getElementById("btn-open-buildings");
     const turnSpeedInput = document.getElementById("turn-speed");
     const growthInput    = document.getElementById("growth-rate");
+
+    // HU-022 (móvil): stats flotantes + modal info edificio
+    const mobileStatsBtnEl = document.getElementById("btn-open-stats");
+    const mobileStatsOverlayEl = document.getElementById("Mobile_stats_modal");
+    const mobileTurnEl = document.getElementById("m-turn-value");
+    const mobileScoreEl = document.getElementById("m-score-value");
+    const mobileScoreBreakdownEl = document.getElementById("m-score-breakdown");
+
+    const buildingInfoOverlayEl = document.getElementById("Building_info_modal");
+    const buildingInfoOverlayContentEl = document.getElementById("building-info-modal-content");
+
+    const mobileBuildMenuEl = document.getElementById("mobile-build-menu");
+
+    function syncMobileVisibility() {
+        const isMobile = isMobileViewport();
+
+        // Menú inferior: solo móvil
+        if (mobileBuildMenuEl) {
+            // En desktop limpiamos el inline style para que Bootstrap (d-md-none) mande
+            mobileBuildMenuEl.style.display = isMobile ? "block" : "";
+        }
+
+        // Botón de construcción: solo desktop
+        if (openBuildingsBtnEl) {
+            openBuildingsBtnEl.style.display = isMobile ? "none" : "";
+        }
+    }
+
+    try { syncMobileVisibility(); } catch {}
+    try { window.addEventListener("resize", syncMobileVisibility); } catch {}
+
 
     // ─── Música de fondo ───────────────────────────────────────────────────
     const bgmEl = document.getElementById("bgm");
@@ -101,12 +146,13 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         }
     } catch {}
 
-    // Navegar a la vista de puntajes (ranking)
+    // Abrir ranking (modal)
     if (cityInfoEl) {
         cityInfoEl.addEventListener("click", function (e) {
             const t = e.target;
             if (t && t.id === "btn-scores") {
-                window.location.href = "Raking.html";
+                try { e.preventDefault?.(); } catch {}
+                openRankingModal();
             }
         });
     }
@@ -205,7 +251,7 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         if (cityInfoEl) cityInfoEl.innerHTML = `
             <p class="d-flex align-items-center justify-content-between mb-1">
                 <strong>${myCity.getNameCity()}</strong>
-                <button id="btn-scores" type="button" class="btn btn-sm btn-outline-light">Puntajes</button>
+                <button id="btn-scores" type="button" class="btn btn-sm btn-outline-coffee" title="Puntajes">🏆</button>
             </p>
             <p class="mb-1">Alcalde: ${myCity.getNamePlayer()}</p>
             <p class="mb-0">Region: ${myCity.getLocation()}</p>`;
@@ -234,14 +280,87 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
                 <div class="resource-row"><span>👥 Poblacion</span><span class="text-light">${myCity.getCitizens().length}</span></div>
                 <div class="resource-row"><span>😊 Felicidad</span><span class="text-light">${getAvgHappiness()}%</span></div>`;
         }
-        if (scoreEl) scoreEl.textContent = myCity.getScore()?.getTotal() ?? 0; // Muestra score
+        const scoreObj = myCity.getScore?.();
+        if (scoreEl) scoreEl.textContent = scoreObj?.getTotal?.() ?? 0; // Muestra score
+
+        // Stats en modal móvil
+        if (mobileScoreEl) mobileScoreEl.textContent = scoreObj?.getTotal?.() ?? 0;
+
+        const scoreBreakdownEl = document.getElementById("score-breakdown");
+        if (scoreBreakdownEl && scoreObj) {
+            const pop  = scoreObj.getPopulationPoints?.()  ?? 0;
+            const hap  = scoreObj.getHappinessPoints?.()   ?? 0;
+            const res  = scoreObj.getResourcePoints?.()    ?? 0;
+            const bld  = scoreObj.getBuildingPoints?.()    ?? 0;
+            const elec = scoreObj.getElectricityPoints?.() ?? 0;
+            const wat  = scoreObj.getWaterPoints?.()       ?? 0;
+            const bon  = scoreObj.getBonuses?.()           ?? 0;
+            const pen  = scoreObj.getPenalties?.()         ?? 0;
+            const tot  = scoreObj.getTotal?.()             ?? 0;
+
+            // Tip informativo (hover) con el desglose
+            scoreBreakdownEl.textContent = "Detalle";
+            scoreBreakdownEl.style.cursor = "help";
+            scoreBreakdownEl.title = [
+                `Población: +${pop}`,
+                `Felicidad: +${hap}`,
+                `Dinero: +${res}`,
+                `Edificios: +${bld}`,
+                `Electricidad: ${elec>=0?"+":""}${elec}`,
+                `Agua: ${wat>=0?"+":""}${wat}`,
+                `Bonos: +${bon}`,
+                `Penalizaciones: -${pen}`,
+                `Total: ${tot}`
+            ].join("\n");
+
+            // Mismo detalle para el modal móvil
+            if (mobileScoreBreakdownEl) {
+                mobileScoreBreakdownEl.textContent = "Detalle";
+                mobileScoreBreakdownEl.style.cursor = "help";
+                mobileScoreBreakdownEl.title = scoreBreakdownEl.title;
+            }
+        }
         if (turnEl)  turnEl.textContent  = myCity.getTurn(); // Muestra turno
+        if (mobileTurnEl) mobileTurnEl.textContent = myCity.getTurn();
     }
 
     function getAvgHappiness() { // Promedio de felicidad de ciudadanos
         const c = myCity.getCitizens(); // Lista de ciudadanos
         if (!c.length) return 0; // Si no hay ciudadanos, felicidad 0
         return Math.round(c.reduce((s,ci)=>s+ci.getHappiness(),0)/c.length); // Suma felicidad / cantidad
+    }
+
+    function saveRankingSnapshot() {
+        try {
+            if (typeof Raking !== "function") return;
+            const r = new Raking();
+            r.loadRanking();
+
+            const cityName = myCity.getNameCity();
+            const mayor = myCity.getNamePlayer();
+            const score = myCity.getScore()?.getTotal() ?? 0;
+            const population = myCity.getCitizens()?.length ?? 0;
+            const happiness = getAvgHappiness();
+            const turns = myCity.getTurn();
+            const date = new Date().toISOString();
+
+            // Para resaltar en la pantalla de ranking
+            try { sessionStorage.setItem("currentCityKey", String(cityName) + "|" + String(mayor)); } catch {}
+
+            r.add({
+                cityName,
+                mayor,
+                // Compatibilidad
+                playerName: mayor,
+                score,
+                population,
+                happiness,
+                turns,
+                date
+            });
+        } catch (e) {
+            console.warn("No se pudo guardar en ranking:", e);
+        }
     }
 
     // ─── 8. Clicks en el mapa ────────────────────────────────────────────────
@@ -310,31 +429,144 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
 
     function handleInfo(x,y) {
         const cell = myCity.getGrid().getCell().find(c=>c.getX()===x&&c.getY()===y); // Celda clickeada
-        if (!cell||!buildingInfoEl) return; // Si no hay celda o panel, no hace nada
+        if (!cell) return;
+        const hasDesktopPanel = !!buildingInfoEl;
+        const hasMobileModal = !!buildingInfoOverlayContentEl;
+        if (!hasDesktopPanel && !hasMobileModal) return;
+
+        function setInfoHtml(html) {
+            if (buildingInfoEl) {
+                buildingInfoEl.innerHTML = html;
+                buildingInfoEl.style.display = "block";
+            }
+            if (buildingInfoOverlayContentEl) {
+                buildingInfoOverlayContentEl.innerHTML = html;
+            }
+        }
+
+        function openInfoOnMobileIfNeeded() {
+            if (!buildingInfoOverlayEl) return;
+            if (!isMobileViewport()) return;
+            openOverlayModal(buildingInfoOverlayEl);
+        }
         if (cell.getRoad()) { // Si es una vía
-            buildingInfoEl.innerHTML=`<h6>Via</h6><p>(${x},${y})</p><p>Costo: $100</p>
-                <button class="btn btn-sm btn-danger mt-2" onclick="demolishAt(${x},${y})">Demoler</button>`;
-            buildingInfoEl.style.display="block"; return; // Muestra panel y termina
+            const html = `
+                <div class="d-flex align-items-center justify-content-between">
+                    <h6 class="mb-0">Via</h6>
+                    <button type="button" class="btn btn-sm btn-outline-light" data-close-building-info data-close-buildinginfo-modal>✕</button>
+                </div>
+                <p class="mb-1">(${x},${y})</p>
+                <p class="mb-1">Costo: $100</p>
+                <p class="mb-2">Producción/t: —</p>
+                <button class="btn btn-sm btn-danger" onclick="demolishAt(${x},${y})">Demoler</button>`;
+            setInfoHtml(html);
+            openInfoOnMobileIfNeeded();
+            return;
         }
         const b=cell.getBuilding(); // Edificio en la celda (si hay)
-        if (!b) { buildingInfoEl.style.display="none"; return; } // Si no hay edificio, oculta panel
+        if (!b) {
+            if (buildingInfoEl) buildingInfoEl.style.display = "none";
+            if (buildingInfoOverlayEl && isMobileViewport()) closeOverlayModal(buildingInfoOverlayEl);
+            return;
+        }
+
+        function getProductionText(building) {
+            // Producción/efecto usando getters existentes (sin ejecutar lógica de turno)
+            if (building instanceof UtilityPlant) {
+                const type = building.getProductionType();
+                const amount = building.getProductionAmount();
+                if (type === "electricity") return `⚡ +${amount}/t`;
+                if (type === "water") return `💧 +${amount}/t`;
+            }
+            if (building instanceof CommercialBuilding) {
+                const inc = building.getIncomePerTurn?.() ?? 0;
+                const needsElec = (building.getElectricityConsumption?.() ?? 0) > 0;
+                return `💰 +$${inc.toLocaleString()}/t${needsElec ? " (requiere ⚡)" : ""}`;
+            }
+            if (building instanceof IndustrialBuilding) {
+                const type = building.getProductionType?.();
+                const amount = building.getProducionAmount?.() ?? 0;
+                const needsElec = (building.getElectricityConsumption?.() ?? 0) > 0;
+                const needsWater = (building.getWaterConsumption?.() ?? 0) > 0;
+                const hint = (needsElec || needsWater) ? " (50% si faltan recursos)" : "";
+                if (type === "food") return `🌽 +${amount}/t${hint}`;
+                if (type === "money") return `💰 +$${amount.toLocaleString()}/t${hint}`;
+                return `+${amount}/t${hint}`;
+            }
+            if (building instanceof ServiceBuilding) {
+                return `Efecto: +${building.getHappinessBoost()} felicidad`;
+            }
+            if (building instanceof Park) {
+                return `Efecto: +${building.getHappinessBonus()} felicidad`;
+            }
+            return "—";
+        }
+
         let extra=""; // HTML extra según tipo de edificio
-        if (b instanceof ResidentialBuilding) extra=`<p>Capacidad: ${b.getCitizens().length}/${b.getCapacity()}</p>`; // Viviendas
-        else if (b instanceof CommercialBuilding||b instanceof IndustrialBuilding) extra=`<p>Empleados: ${b.getEmployees().length}/${b.getJobs()}</p>`; // Trabajos
-        else if (b instanceof ServiceBuilding) extra=`<p>Radio: ${b.getRadius()} · +${b.getHappinessBoost()} felicidad</p>`; // Servicios
-        buildingInfoEl.innerHTML=`<h6>${b.getName()}</h6>
-            <p>Costo: $${b.getCost().toLocaleString()}</p>
-            <p>Mantenimiento/t: $${b.getMaintenanceCost()}</p>
-            <p>⚡ ${b.getElectricityConsumption()} u/t · 💧 ${b.getWaterConsumption()} u/t</p>
+        if (b instanceof ResidentialBuilding) {
+            const residents = b.getCitizens();
+            const avg = residents.length
+                ? Math.round(residents.reduce((s,c)=>s+(c.getHappiness?.() ?? 0),0) / residents.length)
+                : 0;
+            extra = `<p class="mb-1">Capacidad: ${residents.length}/${b.getCapacity()}</p>
+                     <p class="mb-1">Felicidad prom.: ${avg}%</p>`;
+        }
+        else if (b instanceof CommercialBuilding||b instanceof IndustrialBuilding) {
+            extra = `<p class="mb-1">Empleados: ${b.getEmployees().length}/${b.getJobs()}</p>`;
+        }
+        else if (b instanceof ServiceBuilding) {
+            extra = `<p class="mb-1">Radio: ${b.getRadius()} celdas</p>
+                     <p class="mb-1">Bono: +${b.getHappinessBoost()} felicidad</p>`;
+        }
+
+        const productionText = getProductionText(b);
+        const html = `
+            <div class="d-flex align-items-center justify-content-between">
+                <h6 class="mb-0">${b.getName()}</h6>
+                <button type="button" class="btn btn-sm btn-outline-light" data-close-building-info data-close-buildinginfo-modal>✕</button>
+            </div>
+            <p class="mb-1">Costo: $${b.getCost().toLocaleString()}</p>
+            <p class="mb-1">Mantenimiento/t: $${b.getMaintenanceCost()}</p>
+            <p class="mb-1">Consumo/t: ⚡ ${b.getElectricityConsumption()} · 💧 ${b.getWaterConsumption()}</p>
+            <p class="mb-2">Producción/t: ${productionText}</p>
             ${extra}
-            <button class="btn btn-sm btn-danger mt-2" onclick="demolishAt(${x},${y})">Demoler</button>`;
-        buildingInfoEl.style.display="block"; // Muestra panel
+            <button class="btn btn-sm btn-danger" onclick="demolishAt(${x},${y})">Demoler</button>`;
+        setInfoHtml(html);
+        openInfoOnMobileIfNeeded();
     }
 
     window.demolishAt = function(x,y) {
         handleDemolish(x,y); // Reusa la lógica de demolición
         if (buildingInfoEl) buildingInfoEl.style.display="none"; // Oculta panel luego de demoler
     };
+
+    // Cerrar panel de info (botón o click fuera)
+    if (buildingInfoEl) {
+        buildingInfoEl.addEventListener("click", function(e) {
+            const btn = e.target?.closest?.("[data-close-building-info]");
+            if (btn) {
+                buildingInfoEl.style.display = "none";
+            }
+            // Evita que el click dentro del panel lo cierre por el handler global
+            try { e.stopPropagation(); } catch {}
+        });
+
+        document.addEventListener("click", function(e) {
+            // Si el usuario está clickeando el mapa (una celda), dejamos que el flujo de handleInfo controle
+            if (e.target?.closest?.(".cell")) return;
+            if (buildingInfoEl.style.display === "block") {
+                buildingInfoEl.style.display = "none";
+            }
+        });
+    }
+
+    // Cerrar modal móvil de info edificio
+    if (buildingInfoOverlayEl) {
+        buildingInfoOverlayEl.addEventListener("click", function (e) {
+            const closeEl = e.target?.closest?.("[data-close-buildinginfo-modal]");
+            if (closeEl) closeOverlayModal(buildingInfoOverlayEl);
+        });
+    }
 
     // ─── 9. Menu edificios ───────────────────────────────────────────────────
 
@@ -346,6 +578,9 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
             this.classList.add("selected"); // Marca el item actual
             const lbl=this.querySelector(".building-name"); // Intenta leer el nombre visible
             showToast(`Construir: ${lbl?lbl.textContent:selectedType}`,"info"); // Mensaje de modo construir
+
+            // Si el menú está en modal, lo cerramos y dejamos listo para construir
+            try { closeBuildingsModal(); } catch {}
         });
     });
 
@@ -375,21 +610,8 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
     });
 
     if (saveBtn) saveBtn.addEventListener("click",function(){
-        // 1) Guardar puntaje en ranking (localStorage) usando la clase Raking
-        try {
-            if (typeof Raking === "function") {
-                const r = new Raking();
-                r.loadRanking();
-                r.add({
-                    cityName: myCity.getNameCity(),
-                    playerName: myCity.getNamePlayer(),
-                    score: myCity.getScore()?.getTotal() ?? 0,
-                    date: new Date().toLocaleString()
-                });
-            }
-        } catch (e) {
-            console.warn("No se pudo guardar en ranking:", e);
-        }
+        // 1) Guardar puntaje en ranking (localStorage)
+        saveRankingSnapshot();
 
         // 2) Guardar partida (ciudad) en localStorage
         saveCity(myCity); // Guarda manualmente
@@ -412,8 +634,9 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
 
     // ─── 10.1 Atajos de teclado ────────────────────────────────────────────
 
-    const buildingsCollapseEl = document.getElementById("collapseBuildings");
     const gameOverOverlayEl = document.getElementById("Game_over_modal");
+    const rankingOverlayEl = document.getElementById("Ranking_modal");
+    const buildingsOverlayEl = document.getElementById("Buildings_modal");
 
     function isTypingInInput(target) {
         if (!target) return false;
@@ -425,26 +648,56 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         return !!(gameOverOverlayEl && !gameOverOverlayEl.hidden);
     }
 
-    function toggleBuildingsMenu() {
-        if (!buildingsCollapseEl) return;
-        const isOpen = buildingsCollapseEl.classList.contains("show");
-        // Preferir API de Bootstrap si está disponible
+    function isRankingOverlayActive() {
+        return !!(rankingOverlayEl && !rankingOverlayEl.hidden);
+    }
+
+    function isBuildingsOverlayActive() {
+        return !!(buildingsOverlayEl && !buildingsOverlayEl.hidden);
+    }
+
+    function openRankingModal() {
+        if (isGameOverOverlayActive()) return;
+        if (!rankingOverlayEl) return;
+        openOverlayModal(rankingOverlayEl);
         try {
-            const bs = window.bootstrap;
-            if (bs?.Collapse?.getOrCreateInstance) {
-                const inst = bs.Collapse.getOrCreateInstance(buildingsCollapseEl, { toggle: false });
-                if (isOpen) inst.hide();
-                else inst.show();
-                return;
-            }
+            if (typeof window.refreshRankingUI === "function") window.refreshRankingUI();
         } catch {}
-        buildingsCollapseEl.classList.toggle("show", !isOpen);
+    }
+
+    function closeRankingModal() {
+        if (!rankingOverlayEl) return;
+        closeOverlayModal(rankingOverlayEl);
+    }
+
+    function openBuildingsModal() {
+        if (isGameOverOverlayActive()) return;
+        if (!buildingsOverlayEl) return;
+        openOverlayModal(buildingsOverlayEl);
+    }
+
+    function closeBuildingsModal() {
+        if (!buildingsOverlayEl) return;
+        closeOverlayModal(buildingsOverlayEl);
+    }
+
+    function toggleBuildingsModal() {
+        if (isBuildingsOverlayActive()) closeBuildingsModal();
+        else openBuildingsModal();
     }
 
     document.addEventListener("keydown", function (e) {
         if (!e) return;
         if (e.repeat) return;
         if (isGameOverOverlayActive()) return;
+        if (isRankingOverlayActive() && e.key === "Escape") {
+            closeRankingModal();
+            return;
+        }
+        if (isBuildingsOverlayActive() && e.key === "Escape") {
+            closeBuildingsModal();
+            return;
+        }
         if (isTypingInInput(e.target)) return;
         if (e.ctrlKey || e.metaKey || e.altKey) return;
 
@@ -465,13 +718,13 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
 
         // B: abrir menú de construcción
         if (key === "b") {
-            toggleBuildingsMenu();
+            if (!isMobileViewport()) toggleBuildingsModal();
             return;
         }
 
         // R: modo construcción de vías (selecciona el item road)
         if (key === "r") {
-            if (!buildingsCollapseEl?.classList.contains("show")) toggleBuildingsMenu();
+            if (!isBuildingsOverlayActive()) openBuildingsModal();
             const roadItem = document.querySelector('.building-item[data-type="road"]');
             if (roadItem) roadItem.click();
             else {
@@ -500,6 +753,32 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         }
     });
 
+    // ─── 10.2 Modal Ranking (HU-019) ───────────────────────────────────────
+    // Se abre desde el botón 🏆 del panel de ciudad (#btn-scores)
+
+    if (rankingOverlayEl) {
+        rankingOverlayEl.addEventListener("click", function (e) {
+            const closeEl = e.target?.closest?.("[data-close-ranking-modal]");
+            if (closeEl) {
+                closeRankingModal();
+            }
+        });
+    }
+
+    // ─── 10.3 Modal Construcción ──────────────────────────────────────────
+    if (openBuildingsBtnEl) {
+        openBuildingsBtnEl.addEventListener("click", function () {
+            openBuildingsModal();
+        });
+    }
+
+    if (buildingsOverlayEl) {
+        buildingsOverlayEl.addEventListener("click", function (e) {
+            const closeEl = e.target?.closest?.("[data-close-buildings-modal]");
+            if (closeEl) closeBuildingsModal();
+        });
+    }
+
     // ─── 11. Modo ────────────────────────────────────────────────────────────
 
     function setMode(mode) {
@@ -515,7 +794,11 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
 
     // ─── 12. Callbacks TurnService ───────────────────────────────────────────
 
-    function onTurnEnd() { updateInfoPanels(); } // Al terminar un turno: refrescar paneles
+    function onTurnEnd() {
+        updateInfoPanels();
+        // Guardar ranking en cada turno (score en tiempo real)
+        saveRankingSnapshot();
+    } // Al terminar un turno: refrescar paneles
     function onGameOver(msg) {
         try {
             sessionStorage.setItem("gameOverActive", "1");
@@ -556,9 +839,12 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         if (demolishBtn) demolishBtn.disabled = true;
         if (routeBtn) routeBtn.disabled = true;
 
-        // Deshabilitar construcción y ocultar ítems
-        document.querySelector("#building-accordion .accordion-button")?.setAttribute("disabled", "");
-        document.getElementById("collapseBuildings")?.classList.remove("show");
+        // Cerrar/deshabilitar construcción
+        try { closeOverlayModal(document.getElementById("Buildings_modal")); } catch {}
+        const buildBtn = document.getElementById("btn-open-buildings");
+        if (buildBtn) buildBtn.disabled = true;
+
+        // Nota: ya no hay acordeón; construcción es modal
     }
 
     // ─── 13. Toast ───────────────────────────────────────────────────────────
@@ -568,7 +854,12 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         if (!c) { // Si no existe, lo crea
             c=document.createElement("div"); // Crea el div contenedor
             c.id="toast-container"; // ID para encontrarlo luego
-            c.style.cssText="position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;"; // Posición
+            // En móvil se muestran arriba; en desktop se mantienen abajo/derecha
+            if (isMobileViewport()) {
+                c.style.cssText="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;";
+            } else {
+                c.style.cssText="position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px;"; // Posición
+            }
             document.body.appendChild(c); // Lo agrega al body
         }
         const t=document.createElement("div"); // Crea un toast
@@ -579,26 +870,37 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         setTimeout(()=>t.remove(),3000); // Quita el toast luego de 3s
     }
 
+    // ─── 13.1 Stats móvil (HU-022) ───────────────────────────────────────
+    function openMobileStats() {
+        if (!mobileStatsOverlayEl) return;
+        openOverlayModal(mobileStatsOverlayEl);
+    }
+
+    function closeMobileStats() {
+        if (!mobileStatsOverlayEl) return;
+        closeOverlayModal(mobileStatsOverlayEl);
+    }
+
+    if (mobileStatsBtnEl) {
+        mobileStatsBtnEl.addEventListener("click", function () {
+            openMobileStats();
+        });
+    }
+
+    if (mobileStatsOverlayEl) {
+        mobileStatsOverlayEl.addEventListener("click", function (e) {
+            const closeEl = e.target?.closest?.("[data-close-mobile-stats]");
+            if (closeEl) closeMobileStats();
+        });
+    }
+
     // ─── 14. Guardado automatico cada 30s ────────────────────────────────────
     setInterval(function(){
         // 1) Guardar partida
         try { saveCity(myCity); } catch (e) {}
 
-        // 2) Guardar ranking (misma estructura que el saveBtn)
-        try {
-            if (typeof Raking === "function") {
-                const r = new Raking();
-                r.loadRanking();
-                r.add({
-                    cityName: myCity.getNameCity(),
-                    playerName: myCity.getNamePlayer(),
-                    score: myCity.getScore()?.getTotal() ?? 0,
-                    date: new Date().toLocaleString()
-                });
-            }
-        } catch (e) {
-            console.warn("No se pudo autoguardar en ranking:", e);
-        }
+        // 2) Guardar ranking
+        saveRankingSnapshot();
     },30000); // Autoguardado cada 30 segundos
 
     // ─── 15. Arranque ────────────────────────────────────────────────────────

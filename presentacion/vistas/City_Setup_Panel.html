@@ -65,14 +65,10 @@
             <input id="mayor-name" class="form-control" type="text" maxlength="50">
 
             <label for="location">Ubicación (ciudad colombiana):</label>
-            <select id="location" class="form-select">
-                <option value="">Seleccione una ciudad colombiana...</option>
-            </select>
+            <input id="location" class="form-control" type="text" maxlength="50" placeholder="Ej. Bogotá, Cundinamarca, Manizales">
 
-            <label for="map-size">Tamaño del mapa</label>
-                <label for="map-size">Tamaño del mapa (15-30):</label>
-                <input id="map-size" type="number" class="form-control" value="20" min="15" max="30">
-            </select>
+            <label for="map-size">Tamaño del mapa (15-30):</label>
+            <input id="map-size" type="number" class="form-control" value="20" min="15" max="30">
 
             <button id="btn-create-city" class="btn btn-success btn-lg mt-3" type="button">
                 Crear Ciudad

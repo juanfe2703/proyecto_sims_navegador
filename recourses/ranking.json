@@ -1,0 +1,24 @@
+{
+  "ranking": [
+    {
+      "cityName": "La ciudad de Juan",
+      "mayor": "Juanito",
+      "playerName": "Juanito",
+      "score": 5574,
+      "population": 1,
+      "happiness": 35,
+      "turns": 10,
+      "date": "2026-04-05T06:08:42.591Z"
+    },
+    {
+      "cityName": "Mi imperio",
+      "mayor": "lolito",
+      "playerName": "lolito",
+      "score": 321,
+      "population": 0,
+      "happiness": 0,
+      "turns": 1,
+      "date": "2026-04-05T06:06:53.512Z"
+    }
+  ]
+}

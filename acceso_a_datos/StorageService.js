@@ -17,6 +17,14 @@ function _safeFileName(name) {
         .replace(/\s+/g, "_");
 }
 
+function _dateStamp() {
+    const d = new Date();
+    const yyyy = String(d.getFullYear());
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+}
+
 function exportCityToJsonFile(city, fileName) {
     const data = serializeCity(city);
     const json = JSON.stringify(data, null, 2);
@@ -28,7 +36,8 @@ function exportCityToJsonFile(city, fileName) {
     a.href = url;
 
     const cityName = (city && typeof city.getNameCity === "function") ? city.getNameCity() : "ciudad";
-    const baseName = fileName ? fileName : (_safeFileName(cityName) + "_save.json");
+    const safeCity = _safeFileName(cityName);
+    const baseName = fileName ? fileName : (`ciudad_${safeCity}_${_dateStamp()}.json`);
     a.download = baseName;
 
     document.body.appendChild(a);
