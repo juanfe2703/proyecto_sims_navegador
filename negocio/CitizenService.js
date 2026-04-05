@@ -15,10 +15,10 @@ class CitizenService {
         citizen.calculateHappiness(city);
         return citizen;
     }
-
-
-
-
+ 
+ 
+ 
+ 
         // ─── assing home ──────────────────────────────────────────────
  
     /**
@@ -43,10 +43,10 @@ class CitizenService {
             }
         });
     }
-
-
-
-
+ 
+ 
+ 
+ 
     // ─── Employ assingment ────────────────────────────────────────────────
  
     /**
@@ -71,11 +71,11 @@ class CitizenService {
             }
         });
     }
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
     // ─── Crecimiento de población ────────────────────────────────────────────
  
     /**
@@ -90,17 +90,17 @@ class CitizenService {
         const hasHousing = city.getBuildings()
             .filter(b => b instanceof ResidentialBuilding)
             .some(b => b.hasSpace());
-
+ 
         const hasJobs = city.getBuildings()
             .filter(b => b instanceof CommercialBuilding || b instanceof IndustrialBuilding)
             .some(b => b.hasVacancy());
-
+ 
         // Si no hay vivienda o empleo disponible, no puede crecer
         if (!hasHousing || !hasJobs) return;
-
+ 
         const population   = city.getCitizens().length;
         const avgHappiness = this._getAverageHappiness(city);
-
+ 
         // La condicion de felicidad solo aplica cuando ya hay ciudadanos.
         // Con ciudad vacia la felicidad es 0, lo que bloquearia para siempre
         // el primer ciudadano (circulo vicioso).
@@ -119,11 +119,11 @@ class CitizenService {
             this.createCitizen(city);
         }
     }
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
     // ─── Complete procces per turn ──────────────────────────────────────────
  
     /**
@@ -133,12 +133,15 @@ class CitizenService {
      * TurnService call this method per any turn
      */
     processCitizens(city, growthRate = 3) {
-        this.growPopulation(city, growthRate);
+        // Primero asignar vivienda y empleo a ciudadanos existentes,
+        // luego actualizar felicidad, y ENTONCES evaluar si crece la población.
+        // Así growPopulation lee una felicidad real y no el valor 0 por defecto.
         this.assignHousing(city);
         this.assignJobs(city);
         this._updateHappiness(city);
+        this.growPopulation(city, growthRate);
     }
-
+ 
     // ─── Inside Helpers ────────────────────────────────────────────────────
  
     /**
