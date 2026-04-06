@@ -251,7 +251,7 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
         if (cityInfoEl) cityInfoEl.innerHTML = `
             <p class="d-flex align-items-center justify-content-between mb-1">
                 <strong>${myCity.getNameCity()}</strong>
-                <button id="btn-scores" type="button" class="btn btn-sm btn-outline-coffee" title="Puntajes">🏆</button>
+                <button id="btn-scores" type="button" class="btn btn-sm btn-outline-coffee" data-bs-toggle="tooltip" data-bs-title="Puntajes">🏆</button>
             </p>
             <p class="mb-1">Alcalde: ${myCity.getNamePlayer()}</p>
             <p class="mb-0">Region: ${myCity.getLocation()}</p>`;
@@ -265,14 +265,14 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
                 <div class="resource-row"><span>⚡ Electricidad</span>
                     <span 
                         class="${r.getElectricity()<0?"text-danger":"text-light"}"
-                        title="Producción: ${elecProd} | Consumo: ${elecCons}">
+                        data-bs-toggle="tooltip" data-bs-title="Producción: ${elecProd} | Consumo: ${elecCons}">
                         ${elecProd} / ${elecCons}
                     </span>
                 </div>
                 <div class="resource-row"><span>💧 Agua</span>
                     <span 
                         class="${r.getWater()<0?"text-danger":"text-light"}"
-                        title="Producción: ${waterProd} | Consumo: ${waterCons}">
+                        data-bs-toggle="tooltip" data-bs-title="Producción: ${waterProd} | Consumo: ${waterCons}">
                         ${waterProd} / ${waterCons}
                     </span>
                 </div>
@@ -301,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
             // Tip informativo (hover) con el desglose
             scoreBreakdownEl.textContent = "Detalle";
             scoreBreakdownEl.style.cursor = "help";
-            scoreBreakdownEl.title = [
+            const scoreTipHtml = [
                 `Población: +${pop}`,
                 `Felicidad: +${hap}`,
                 `Dinero: +${res}`,
@@ -311,17 +311,42 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
                 `Bonos: +${bon}`,
                 `Penalizaciones: -${pen}`,
                 `Total: ${tot}`
-            ].join("\n");
+            ].join("<br>");
+            scoreBreakdownEl.setAttribute("data-bs-toggle", "tooltip");
+            scoreBreakdownEl.setAttribute("data-bs-html", "true");
+            scoreBreakdownEl.setAttribute("data-bs-title", scoreTipHtml);
+            scoreBreakdownEl.removeAttribute("title");
 
             // Mismo detalle para el modal móvil
             if (mobileScoreBreakdownEl) {
                 mobileScoreBreakdownEl.textContent = "Detalle";
                 mobileScoreBreakdownEl.style.cursor = "help";
-                mobileScoreBreakdownEl.title = scoreBreakdownEl.title;
+                mobileScoreBreakdownEl.setAttribute("data-bs-toggle", "tooltip");
+                mobileScoreBreakdownEl.setAttribute("data-bs-html", "true");
+                mobileScoreBreakdownEl.setAttribute("data-bs-title", scoreTipHtml);
+                mobileScoreBreakdownEl.removeAttribute("title");
             }
         }
         if (turnEl)  turnEl.textContent  = myCity.getTurn(); // Muestra turno
         if (mobileTurnEl) mobileTurnEl.textContent = myCity.getTurn();
+
+        refreshTooltips();
+    }
+
+    function refreshTooltips() {
+        try {
+            if (!window.bootstrap || !bootstrap.Tooltip) return;
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                const inst = bootstrap.Tooltip.getInstance(el);
+                if (inst) inst.dispose();
+                new bootstrap.Tooltip(el, {
+                    trigger: 'hover focus',
+                    boundary: 'window'
+                });
+            });
+        } catch (_) {
+            // No bloquear el juego si falla el tooltip
+        }
     }
 
     function getAvgHappiness() { // Promedio de felicidad de ciudadanos

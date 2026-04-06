@@ -18,20 +18,10 @@ function initMap() {
     const pan_left  = document.getElementById("pan-left");
     const pan_right = document.getElementById("pan-right");
 
-    const PAN_MIN_ZOOM = 1.1; // primer nivel de zoom (después de 1.0)
+    const PAN_MIN_ZOOM = 1.05;
     const PAN_STEP = 140;
     let pan_x = 0;
     let pan_y = 0;
-
-    function applyPan() {
-        if (!gridElement) return;
-        if (zoom_level < PAN_MIN_ZOOM) {
-            pan_x = 0;
-            pan_y = 0;
-        }
-        // No toca el zoom (transform). Solo mueve el contenido.
-        gridElement.style.translate = pan_x + "px " + pan_y + "px";
-    }
 
     function clampPan() {
         if (!viewportEl || !gridElement) return;
@@ -49,33 +39,52 @@ function initMap() {
         const scaledW = baseW * zoom_level;
         const scaledH = baseH * zoom_level;
 
-        // Limites para que el mapa no se salga del viewport.
-        const minX = Math.min(0, viewportW - scaledW);
-        const minY = Math.min(0, viewportH - scaledH);
+        // X: el mapa está centrado horizontalmente; permitimos pan a ambos lados.
+        // Si el mapa no excede el viewport, no hay pan.
+        if (scaledW <= viewportW) {
+            pan_x = 0;
+        } else {
+            const extraX = scaledW - viewportW;
+            const minX = -extraX / 2;
+            const maxX = extraX / 2;
+            if (pan_x < minX) pan_x = minX;
+            if (pan_x > maxX) pan_x = maxX;
+        }
 
-        if (pan_x > 0) pan_x = 0;
-        if (pan_y > 0) pan_y = 0;
-        if (pan_x < minX) pan_x = minX;
-        if (pan_y < minY) pan_y = minY;
+        // Y: el mapa está alineado arriba; permitimos bajar (negativo) y volver hacia arriba (0).
+        if (scaledH <= viewportH) {
+            pan_y = 0;
+        } else {
+            const minY = viewportH - scaledH;
+            const maxY = 0;
+            if (pan_y < minY) pan_y = minY;
+            if (pan_y > maxY) pan_y = maxY;
+        }
+    }
+
+    function applyTransform() {
+        if (!gridElement) return;
+        if (zoom_level < PAN_MIN_ZOOM) {
+            pan_x = 0;
+            pan_y = 0;
+        }
+        gridElement.style.transformOrigin = "top center";
+        gridElement.style.transform = `translate(${pan_x}px, ${pan_y}px) scale(${zoom_level})`;
     }
 
     if (zoom_in) {
         zoom_in.addEventListener("click", function () {
             zoom_level = Math.min(2, parseFloat((zoom_level + 0.1).toFixed(1)));
-            gridElement.style.transformOrigin = "top center"; // Mantener el origen del zoom en la parte superior central
-            gridElement.style.transform = `scale(${zoom_level})`;
             clampPan();
-            applyPan();
+            applyTransform();
         });
     }
 
     if (zoom_out) {
         zoom_out.addEventListener("click", function () {
             zoom_level = Math.max(0.5, parseFloat((zoom_level - 0.1).toFixed(1)));
-            gridElement.style.transformOrigin = "top center"; // Mantener el origen del zoom en la parte superior central
-            gridElement.style.transform = `scale(${zoom_level})`;
             clampPan();
-            applyPan();
+            applyTransform();
         });
     }
 
@@ -84,7 +93,8 @@ function initMap() {
             if (zoom_level < PAN_MIN_ZOOM) return;
             pan_x = pan_x + PAN_STEP;
             clampPan();
-            applyPan();
+            applyTransform();
+            this.blur?.();
         });
     }
 
@@ -93,7 +103,8 @@ function initMap() {
             if (zoom_level < PAN_MIN_ZOOM) return;
             pan_x = pan_x - PAN_STEP;
             clampPan();
-            applyPan();
+            applyTransform();
+            this.blur?.();
         });
     }
 
@@ -102,7 +113,8 @@ function initMap() {
             if (zoom_level < PAN_MIN_ZOOM) return;
             pan_y = pan_y + PAN_STEP;
             clampPan();
-            applyPan();
+            applyTransform();
+            this.blur?.();
         });
     }
 
@@ -111,11 +123,13 @@ function initMap() {
             if (zoom_level < PAN_MIN_ZOOM) return;
             pan_y = pan_y - PAN_STEP;
             clampPan();
-            applyPan();
+            applyTransform();
+            this.blur?.();
         });
     }
 
-    applyPan();
+    clampPan();
+    applyTransform();
 }
 
 // ─── Clima ────────────────────────────────────────────────────────────────────

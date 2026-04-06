@@ -482,3 +482,282 @@
 .buildings-overlay.show .buildings-card {
     transform: scale(1);
 }
+
+/* Noticias: diseño con scroll (como antes) */
+.news-panel-scroll {
+    overflow-y: auto;
+    max-height: 420px;
+}
+
+/* ── Responsive tablet (HU-023) ─────────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1024px) {
+    /* Evitar scroll horizontal en el mapa (a zoom 1 debe caber completo) */
+    body {
+        overflow-x: hidden;
+    }
+
+    /* Constrain del layout a la altura visible (evita secciones “perdidas”) */
+    #Container {
+        height: 100vh;
+    }
+
+    #Container > .row {
+        height: 100%;
+    }
+
+    #map-viewport {
+        overflow-x: hidden;
+    }
+
+    #id_city {
+        max-width: 100%;
+    }
+
+    /* Botones “medium” y cómodos para touch */
+    .controls-panel .btn,
+    .zoom-controls .btn,
+    .sidebar-left .btn,
+    .sidebar-right .btn,
+    .buildings-open-btn {
+        min-height: 44px;
+    }
+
+    .controls-panel .btn,
+    .zoom-controls .btn,
+    .sidebar-left .btn,
+    .sidebar-right .btn {
+        padding: 0.55rem 0.75rem;
+        font-size: 1rem;
+    }
+
+    /* Tooltips Bootstrap más grandes en tablet */
+    .tooltip .tooltip-inner {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+        max-width: 340px;
+    }
+
+    /* Modales/overlays ocupan ~60% pantalla */
+    .gameover-card,
+    .ranking-card,
+    .buildings-card,
+    .buildinginfo-card,
+    .mobile-stats-card {
+        max-width: 60vw;
+    }
+
+    /* Tabs laterales (clima/noticias) dentro del sidebar derecho */
+    .sidebar-right {
+        min-height: 0;
+    }
+
+    .widget-tabs {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .widget-tabs-inner {
+        display: flex;
+        gap: 10px;
+        height: 100%;
+    }
+
+    .widget-tab-nav {
+        flex: 0 0 auto;
+    }
+
+    .widget-tab-content {
+        flex: 1 1 auto;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .widget-tab-content,
+    .widget-tab-content .tab-pane {
+        height: 100%;
+    }
+
+    /* Noticias mantiene el scroll y max-height del diseño anterior */
+
+    /* Mantener controles del mapa visibles (viewport flexible + controles fijos debajo) */
+    #map-col {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+
+    .map-wrapper {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        flex: 1 1 auto;
+    }
+
+    #map-viewport {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+}
+
+/* Tablet: orientación vertical (similar a móvil pero con más espacio) */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+    /* Layout 2 columnas: mapa (70%) + sidebar (30%) */
+    #Container > .row {
+        display: grid;
+        grid-template-columns: 70fr 30fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    #map-col {
+        grid-column: 1;
+        grid-row: 1 / span 2;
+        min-width: 0;
+    }
+
+    .sidebar-left {
+        grid-column: 2;
+        grid-row: 1;
+        width: auto !important;
+        margin: 0 !important;
+        min-width: 0;
+    }
+
+    .sidebar-right {
+        grid-column: 2;
+        grid-row: 2;
+        width: auto !important;
+        margin: 0 !important;
+        min-width: 0;
+    }
+
+    .sidebar-left,
+    .sidebar-right {
+        height: 100%;
+        overflow: auto;
+    }
+
+    /* Recursos en formato colapsable como en móvil */
+    #resources-container > button {
+        display: block !important;
+    }
+
+    #resources-container > h6 {
+        display: none !important;
+    }
+
+    /* Orden lógico: recursos arriba, construcción/controles al centro, stats abajo */
+    .sidebar-left #resources-container {
+        order: 0;
+    }
+
+    .sidebar-left #city-panel {
+        order: 1;
+    }
+
+    .sidebar-left #btn-open-buildings {
+        order: 2;
+    }
+
+    .sidebar-left .controls-panel {
+        order: 3;
+    }
+
+    .sidebar-left .score-panel {
+        order: 99;
+        margin-top: auto;
+    }
+
+    /* Tabs laterales en vertical */
+    .widget-tab-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+}
+
+/* Tablet: orientación horizontal (optimizado con sidebar izq y der) */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+    /* 3 columnas: izquierda (15%) + mapa (70%) + derecha (15%) */
+    #Container > .row {
+        display: grid;
+        grid-template-columns: 15fr 70fr 15fr;
+        grid-template-rows: 1fr;
+        gap: 8px;
+        align-items: stretch;
+    }
+
+    .sidebar-left {
+        grid-column: 1;
+        grid-row: 1;
+        width: auto !important;
+        margin: 0 !important;
+        min-width: 0;
+    }
+
+    #map-col {
+        grid-column: 2;
+        grid-row: 1;
+        min-width: 0;
+    }
+
+    .sidebar-right {
+        grid-column: 3;
+        grid-row: 1;
+        width: auto !important;
+        margin: 0 !important;
+        min-width: 0;
+    }
+
+    .sidebar-left,
+    .sidebar-right {
+        height: 100%;
+        overflow: auto;
+    }
+
+    /* Tabs laterales en vertical */
+    .widget-tab-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    /* Orden lógico también en horizontal */
+    .sidebar-left #resources-container {
+        order: 0;
+    }
+
+    .sidebar-left #city-panel {
+        order: 1;
+    }
+
+    .sidebar-left #btn-open-buildings {
+        order: 2;
+    }
+
+    .sidebar-left .controls-panel {
+        order: 3;
+    }
+
+    .sidebar-left .score-panel {
+        order: 99;
+        margin-top: auto;
+    }
+}
+
+/* Desktop: mantener widgets visibles simultáneamente (sin forzar tabs) */
+@media (min-width: 1024.02px) {
+    .widget-tab-nav {
+        display: none;
+    }
+
+    .widget-tabs-inner {
+        display: block;
+    }
+
+    .sidebar-right .tab-content > .tab-pane {
+        display: block !important;
+        opacity: 1 !important;
+    }
+}
