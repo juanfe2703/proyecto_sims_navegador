@@ -16,7 +16,6 @@ body {
     box-sizing: border-box; /* caja incluye borde */
     width: 100%; /* ancho completo */
     margin: 0 auto; /* centrar horizontal */
-    display: grid; /* layout flexible */
 }
 
 #map-viewport {
@@ -219,17 +218,6 @@ body {
     overflow: hidden; /* ocultar excedente */
 }
 
-.news-link {
-    font-size: 12px; /* tamaño enlace */
-    color: #81C784; /* color del enlace */
-    text-decoration: none; /* sin subrayado */
-}
-
-.Container {
-    display: flex; /* layout flexible */
-    align-items: center; /* centrar vertical */
-}
-
 .news-item:hover {
     background: #4B5563; /* resaltar al pasar */
     border-radius: 8px; /* redondeo */
@@ -240,15 +228,11 @@ body {
 }
 
 #zoom-in,
+#zoom-out,
 #pan-up,
 #pan-down,
 #pan-left,
 #pan-right{
-    background: #C8E6C9; /* fondo botón */
-    border: 2px solid #81C784; /* borde botón */
-}
-
-#zoom-out{
     background: #C8E6C9; /* fondo botón */
     border: 2px solid #81C784; /* borde botón */
 }
@@ -293,12 +277,6 @@ body {
     transition: background-color 0.2s ease;
 }
 
-#building-accordion .building-item:hover{
-    background: #c28a63; /* resaltar al pasar */
-    border-radius: 8px; /* redondeo */
-    cursor: pointer; /* indicar interacción */
-}
-
 .building-img-header{
     width: 40px; /* tamaño del icono en el header */
     height: 40px; /* tamaño del icono en el header */
@@ -308,57 +286,5 @@ body {
 }
 
 
-#building-accordion{
-    background: #ba8057; /* fondo del acordeón */
-    border-radius: 8px; /* bordes redondeados */
-}
-
-#building-accordion .accordion-item{
-    background: #ba8057;
-    border: 4px solid #6D4C41;
-}
-
-#building-accordion .accordion-button{
-    background: #c28a63; /* marrón para el header (más claro para ver la flecha) */
-    color: #F3F4F6; /* texto claro como panel derecho */
-    display: flex;
-    align-items: center;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-#building-accordion .accordion-button:not(.collapsed){
-    background: #c28a63;
-    color: #F3F4F6;
-    box-shadow: none;
-}
-
-#building-accordion .accordion-button:focus{
-    box-shadow: none;
-}
-
-/* Flecha blanca del acordeón (simple, sin filter/SVG) */
-#building-accordion .accordion-button::after{
-    background-image: none;
-    content: "";
-    display: block;
-    margin-left: auto;
-    width: 0;
-    height: 0;
-    border-left: 7px solid transparent;
-    border-right: 7px solid transparent;
-    border-top: 9px solid #FFFFFF; /* triángulo hacia abajo */
-    transform: rotate(0deg);
-    transition: transform 0.2s ease;
-}
-
-#building-accordion .accordion-button:not(.collapsed)::after{
-    transform: rotate(180deg); /* triángulo hacia arriba */
-}
-
-#building-accordion .accordion-body{
-    background: #ba8057;
-    color: #F3F4F6;
-}
- 
 
 

@@ -972,7 +972,4 @@ document.addEventListener("DOMContentLoaded", function () { // Ejecuta cuando el
     }, 1800000); // 30 minutos
 
     if (pauseBtn) pauseBtn.textContent="▶ Iniciar"; // Texto inicial del botón
-    console.log("✓ Juego listo |", myCity.getNameCity(),
-                "| Grid:", myCity.getGrid().getWidth()+"x"+myCity.getGrid().getHeight(),
-                "| Edificios:", myCity.getBuildings().length);
 });

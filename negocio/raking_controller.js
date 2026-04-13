@@ -89,12 +89,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
                             <div class="fw-bold">#${position} · ${cityName}</div>
-                            <div style="font-size:12px;opacity:.85;">Alcalde: ${mayorName}${date ? ` · ${date}` : ""}</div>
-                            <div style="font-size:12px;opacity:.85;">Población: ${population} · Felicidad: ${happiness}% · Turnos: ${turns}</div>
+                            <div class="ranking-item-meta">Alcalde: ${mayorName}${date ? ` · ${date}` : ""}</div>
+                            <div class="ranking-item-meta">Población: ${population} · Felicidad: ${happiness}% · Turnos: ${turns}</div>
                         </div>
                         <div class="text-end">
-                            <div class="${badgeClass}" style="font-size:12px;">${score}</div>
-                            <div style="font-size:11px;opacity:.8;">Score</div>
+                            <div class="${badgeClass} ranking-item-badge">${score}</div>
+                            <div class="ranking-item-score-label">Score</div>
                         </div>
                     </div>
                 </div>

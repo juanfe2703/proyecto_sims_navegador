@@ -11,6 +11,11 @@ body{
 }
 
 .gameover-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     z-index: 2000;
     opacity: 0;
     visibility: hidden;
@@ -19,6 +24,8 @@ body{
 }
 
 .gameover-backdrop {
+    position: absolute;
+    inset: 0;
     z-index: 0;
     /* Bootstrap usa .opacity-75 con !important; lo sobreescribimos solo aquí para animar */
     opacity: 0 !important;
@@ -51,6 +58,11 @@ body{
 
 #City_content{
     width: 600px;
+}
+
+.form-panel{
+    padding: 1.5rem;
+    box-shadow: var(--bs-box-shadow);
 }
 
 .hidden-input {

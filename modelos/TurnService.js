@@ -52,13 +52,10 @@ class TurnService { // Servicio que ejecuta el avance de la partida por turnos
         // 8. Game over
         const go = this._checkGameOver(city) // Devuelve string si hay condición de game over, o null si no
         if (go) { this.stopTimer(); if (onGameOver) onGameOver(go) } // Detiene timer y notifica el motivo
- 
-        console.log(`Turno ${city.getTurn()} | $${city.getResources().getMoney()} | ⚡${city.getResources().getElectricity()} | 💧${city.getResources().getWater()} | 👥${city.getCitizens().length}`) // Log de resumen
     }
  
     startTimer(city, intervalSeconds = 10, config = {}) { // Empieza turnos automáticos
         this.stopTimer() // Evita tener dos timers corriendo al mismo tiempo
-        console.log(`Timer iniciado: cada ${intervalSeconds}s`) // Log informativo
         this._timerInterval = setInterval(() => { // Guarda el ID del intervalo
             this.processTurn(city, config) // Ejecuta un turno cada intervalo
         }, intervalSeconds * 1000) // Convierte segundos a milisegundos

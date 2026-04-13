@@ -1,8 +1,4 @@
 class ApiNews {
-    constructor() {
-        this._url = "https://api.newscatcherapi.com/v2/search";
-    }
-
     getCurrentNews(city) {
         const url = `https://gnews.io/api/v4/top-headlines?q=${encodeURIComponent(city)}&lang=es&country=CO&max=5&apikey=1429bb08dfde85dee9c391754fdef3a7`;
 

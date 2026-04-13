@@ -39,9 +39,9 @@
 <body>
     <!-- Modal Cargar / Nueva partida (overlay): se muestra quitando hidden -->
     <div id="Load_new_modal"
-         class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center gameover-overlay"
+         class="gameover-overlay"
          hidden>
-        <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-75 gameover-backdrop"></div>
+        <div class="bg-dark gameover-backdrop"></div>
         <div class="card bg-dark text-light border border-danger gameover-card">
             <div class="card-body">
                 <h5 class="card-title mb-2">Partida</h5>
@@ -55,7 +55,7 @@
     </div>
 
     <div id="City_content">
-        <div class="form-panel p-4 shadow">
+        <div class="form-panel">
             <h4>City Builder Game</h4>
 
             <label for="city-name">Nombre de la Ciudad:</label>
@@ -70,12 +70,14 @@
             <label for="map-size">Tamaño del mapa (15-30):</label>
             <input id="map-size" type="number" class="form-control" value="20" min="15" max="30">
 
-            <button id="btn-create-city" class="btn btn-success btn-lg mt-3" type="button">
-                Crear Ciudad
-            </button>
-            <button id="btn-load-map" class="btn btn-outline-secondary mt-2" type="button">
-                📂 Cargar Mapa desde .txt
-            </button>
+            <div class="d-flex gap-2 mt-3">
+                <button id="btn-create-city" class="btn btn-success btn-lg flex-fill" type="button">
+                    Crear Ciudad
+                </button>
+                <button id="btn-load-map" class="btn btn-outline-secondary btn-lg flex-fill" type="button">
+                    📂 Cargar Mapa desde .txt
+                </button>
+            </div>
             <input id="file-map-input" class="hidden-input" type="file" accept=".txt">
 
         </div>
